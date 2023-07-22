@@ -1,0 +1,9 @@
+---
+builds:
+- projectName: testproject
+  sourceVersion: feature/hoge
+- projectName: testproject2
+  environmentVariablesOverride:
+    - name: key
+      value: ${SECRET_VALUE} # export for environment variable
+      type: PLAINTEXT

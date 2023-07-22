@@ -1,0 +1,5 @@
+---
+builds:
+- projectName: testproject
+  sourceVersion: chore/test
+- projectName: testproject2

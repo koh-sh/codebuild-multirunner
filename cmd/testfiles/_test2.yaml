@@ -1,0 +1,5 @@
+---
+builds:
+- projectName: ${TEST_ENV}
+  sourceVersion: chore/test
+- projectName: testproject2
