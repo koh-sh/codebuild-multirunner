@@ -1,9 +1,113 @@
+# This is sample of config.yaml
+# builds is a list of Start Build Input
+# Refer to https://docs.aws.amazon.com/codebuild/latest/APIReference/API_StartBuild.html
+#
+# You Only need to specify projectName and keys which you want to override
+# Also you can use ${KEY} syntax for environment variable
+
 ---
 builds:
+# projectName is required
 - projectName: testproject
-  sourceVersion: feature/hoge
+# Specify parameters to override
 - projectName: testproject2
   environmentVariablesOverride:
-    - name: key
-      value: ${SECRET_VALUE} # export for environment variable
+    - name: TEST_VAR
+      value: FOOBAR
       type: PLAINTEXT
+# Environment variables are assigned
+- projectName: testproject3
+  sourceVersion: ${BRANCH_NAME}
+
+## below is full list of parameters
+# - artifactsOverride:
+#     artifactIdentifier: string
+#     bucketOwnerAccess: string
+#     encryptionDisabled: boolean
+#     location: string
+#     name: string
+#     namespaceType: string
+#     overrideArtifactName: boolean
+#     packaging: string
+#     path: string
+#     type: string
+#   buildspecOverride: string
+#   buildStatusConfigOverride:
+#     context: string
+#     targetUrl: string
+#   cacheOverride:
+#     location: string
+#     modes:
+#     - string
+#     type: string
+#   certificateOverride: string
+#   computeTypeOverride: string
+#   debugSessionEnabled: boolean
+#   encryptionKeyOverride: string
+#   environmentTypeOverride: string
+#   environmentVariablesOverride:
+#   - name: string
+#     type: string
+#     value: string
+#   gitCloneDepthOverride: number
+#   gitSubmodulesConfigOverride:
+#     fetchSubmodules: boolean
+#   idempotencyToken: string
+#   imageOverride: string
+#   imagePullCredentialsTypeOverride: string
+#   insecureSslOverride: boolean
+#   logsConfigOverride:
+#     cloudWatchLogs:
+#       groupName: string
+#       status: string
+#       streamName: string
+#     s3Logs:
+#       bucketOwnerAccess: string
+#       encryptionDisabled: boolean
+#       location: string
+#       status: string
+#   privilegedModeOverride: boolean
+#   projectName: string
+#   queuedTimeoutInMinutesOverride: number
+#   registryCredentialOverride:
+#     credential: string
+#     credentialProvider: string
+#   reportBuildStatusOverride: boolean
+#   secondaryArtifactsOverride:
+#   - artifactIdentifier: string
+#     bucketOwnerAccess: string
+#     encryptionDisabled: boolean
+#     location: string
+#     name: string
+#     namespaceType: string
+#     overrideArtifactName: boolean
+#     packaging: string
+#     path: string
+#     type: string
+#   secondarySourcesOverride:
+#   - auth:
+#       resource: string
+#       type: string
+#     buildspec: string
+#     buildStatusConfig:
+#       context: string
+#       targetUrl: string
+#     gitCloneDepth: number
+#     gitSubmodulesConfig:
+#       fetchSubmodules: boolean
+#     insecureSsl: boolean
+#     location: string
+#     reportBuildStatus: boolean
+#     sourceIdentifier: string
+#     type: string
+#   secondarySourcesVersionOverride:
+#   - sourceIdentifier: string
+#     sourceVersion: string
+#   serviceRoleOverride: string
+#   sourceAuthOverride:
+#     resource: string
+#     type: string
+#   sourceLocationOverride: string
+#   sourceTypeOverride: string
+#   sourceVersion: string
+#   timeoutInMinutesOverride: number
