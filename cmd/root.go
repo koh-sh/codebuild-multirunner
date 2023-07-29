@@ -160,8 +160,9 @@ func readConfigFile(filepath string) BuildConfig {
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "codebuild-multirunner",
-	Short: "Run multiple CodeBuild with setting override respectively",
+	Use:     "codebuild-multirunner",
+	Version: "v0.0.1",
+	Short:   "Run multiple CodeBuild with setting override respectively",
 	Long: `Run multiple CodeBuild with setting override respectively
 
 This command will read YAML based config file and run multiple CodeBuild projects with oneliner.

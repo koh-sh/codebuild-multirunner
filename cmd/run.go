@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// options
 var nowait bool
 var pollsec int
 
