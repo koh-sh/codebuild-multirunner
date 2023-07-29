@@ -162,8 +162,8 @@ func readConfigFile(filepath string) BuildConfig {
 var rootCmd = &cobra.Command{
 	Use:     "codebuild-multirunner",
 	Version: "v0.0.1",
-	Short:   "Run multiple CodeBuild with setting override respectively",
-	Long: `Run multiple CodeBuild with setting override respectively
+	Short:   "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
+	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
 
 This command will read YAML based config file and run multiple CodeBuild projects with oneliner.
 `,
