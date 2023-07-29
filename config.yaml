@@ -2,7 +2,7 @@
 # builds is a list of Start Build Input
 # Refer to https://docs.aws.amazon.com/codebuild/latest/APIReference/API_StartBuild.html
 #
-# You Only need to specify projectName and keys which you want to override
+# You only need to specify projectName and keys which you want to override
 # Also you can use ${KEY} syntax for environment variable
 
 ---
