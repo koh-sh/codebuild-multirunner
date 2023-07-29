@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -14,7 +13,7 @@ import (
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "run CodeBuild projects based on config",
+	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
 		bc := readConfigFile(configfile)
 		runCodeBuild(bc)
@@ -36,10 +35,11 @@ func runCodeBuild(bc BuildConfig) {
 		startbuildinput := convertBuildConfigToStartBuildInput(bc.Builds[i])
 		result, err := client.StartBuild(context.TODO(), &startbuildinput)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Println(err)
+			continue
 		}
-		fmt.Println(result)
-    // TODO: test
+		id := *result.Build.Id
+		log.Printf("Build started. %s\n", id)
 	}
 }
 
