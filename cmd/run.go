@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var nowait bool
+
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -20,16 +22,18 @@ var runCmd = &cobra.Command{
 		bc := readConfigFile(configfile)
 		ids := runCodeBuild(bc)
 		pollingsec := 60
-		for i := 0; ; i++ {
-			time.Sleep(time.Duration(pollingsec) * time.Second)
-			ids = buildStatusCheck(ids)
-			// break if all builds end
-			if len(ids) == 0 {
-				break
-			}
-			// CodeBuild Timeout is 8h
-			if pollingsec*i > 8*60*60 {
-				log.Fatal("Wait Timeout")
+		if !nowait {
+			for i := 0; ; i++ {
+				time.Sleep(time.Duration(pollingsec) * time.Second)
+				ids = buildStatusCheck(ids)
+				// break if all builds end
+				if len(ids) == 0 {
+					break
+				}
+				// CodeBuild Timeout is 8h
+				if pollingsec*i > 8*60*60 {
+					log.Fatal("Wait Timeout")
+				}
 			}
 		}
 	},
@@ -37,6 +41,7 @@ var runCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+	runCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 
 }
 

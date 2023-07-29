@@ -176,8 +176,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configfile, "config", "", "file path for config file. default: ./config.yaml")
-	if configfile == "" {
-		configfile = "./config.yaml"
-	}
+	rootCmd.PersistentFlags().StringVar(&configfile, "config", "./config.yaml", "file path for config file.")
 }
