@@ -23,6 +23,7 @@ func init() {
 	rootCmd.AddCommand(dumpCmd)
 }
 
+// dump read config with environment variables inserted
 func dumpConfig(bc BuildConfig) string {
 	d, err := yaml.Marshal(&bc)
 	if err != nil {

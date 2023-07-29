@@ -23,6 +23,7 @@ var runCmd = &cobra.Command{
 		for i := 0; ; i++ {
 			time.Sleep(time.Duration(pollingsec) * time.Second)
 			ids = buildStatusCheck(ids)
+			// break if all builds end
 			if len(ids) == 0 {
 				break
 			}
@@ -39,6 +40,7 @@ func init() {
 
 }
 
+// run CodeBuild Projects and return build ids
 func runCodeBuild(bc BuildConfig) []string {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {

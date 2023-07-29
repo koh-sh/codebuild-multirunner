@@ -143,6 +143,7 @@ type Build struct {
 
 var configfile string
 
+// read yaml config file for builds definition
 func readConfigFile(filepath string) BuildConfig {
 	bc := BuildConfig{}
 	b, err := os.ReadFile(filepath)

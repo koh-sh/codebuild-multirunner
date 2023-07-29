@@ -8,6 +8,7 @@ import (
 
 const version = "v0.1.0"
 
+// return version
 func getVersion() string {
 	return version
 }
