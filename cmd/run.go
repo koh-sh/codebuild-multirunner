@@ -38,12 +38,12 @@ var runCmd = &cobra.Command{
 			return
 		}
 		for i := 0; ; i++ {
-			time.Sleep(time.Duration(pollsec) * time.Second)
-			ids = buildStatusCheck(client, ids)
 			// break if all builds end
 			if len(ids) == 0 {
 				break
 			}
+			time.Sleep(time.Duration(pollsec) * time.Second)
+			ids = buildStatusCheck(client, ids)
 			// CodeBuild Timeout is 8h
 			if pollsec*i > 8*60*60 {
 				log.Fatal("Wait Timeout")
