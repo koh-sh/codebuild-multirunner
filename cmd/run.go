@@ -32,7 +32,16 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
-		ids := runCodeBuild(client, bc)
+		ids := []string{}
+		for _, v := range bc.Builds {
+			startbuildinput := convertBuildConfigToStartBuildInput(v)
+			id, err := runCodeBuild(client, startbuildinput)
+			if err != nil {
+				log.Println(err)
+			} else {
+				ids = append(ids, id)
+			}
+		}
 		// early return if --no-wait option set
 		if nowait {
 			return
@@ -59,21 +68,15 @@ func init() {
 
 }
 
-// run CodeBuild Projects and return build ids
-func runCodeBuild(client CodeBuildAPI, bc BuildConfig) []string {
-	ids := []string{}
-	for _, v := range bc.Builds {
-		startbuildinput := convertBuildConfigToStartBuildInput(v)
-		result, err := client.StartBuild(context.TODO(), &startbuildinput)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		id := *result.Build.Id
-		ids = append(ids, id)
-		log.Printf("%s [STARTED]\n", id)
+// run CodeBuild Projects and return build id
+func runCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+	result, err := client.StartBuild(context.TODO(), &input)
+	if err != nil {
+		return "", err
 	}
-	return ids
+	id := *result.Build.Id
+	log.Printf("%s [STARTED]\n", id)
+	return id, err
 }
 
 // return api client
