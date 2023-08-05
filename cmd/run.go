@@ -60,8 +60,8 @@ func init() {
 // run CodeBuild Projects and return build ids
 func runCodeBuild(client CodeBuildAPI, bc BuildConfig) []string {
 	ids := []string{}
-	for i := 0; i < len(bc.Builds); i++ {
-		startbuildinput := convertBuildConfigToStartBuildInput(bc.Builds[i])
+	for _, v := range bc.Builds {
+		startbuildinput := convertBuildConfigToStartBuildInput(v)
 		result, err := client.StartBuild(context.TODO(), &startbuildinput)
 		if err != nil {
 			log.Println(err)
@@ -98,14 +98,14 @@ func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i := 0; i < len(result.Builds); i++ {
-		if result.Builds[i].BuildStatus == "SUCCEEDED" {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.GreenString(string(result.Builds[i].BuildStatus)))
-		} else if result.Builds[i].BuildStatus == "IN_PROGRESS" {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.BlueString(string(result.Builds[i].BuildStatus)))
-			inprogressids = append(inprogressids, *result.Builds[i].Id)
+	for _, v := range result.Builds {
+		if v.BuildStatus == "SUCCEEDED" {
+			log.Printf("%s [%s]\n", *v.Id, color.GreenString(string(v.BuildStatus)))
+		} else if v.BuildStatus == "IN_PROGRESS" {
+			log.Printf("%s [%s]\n", *v.Id, color.BlueString(string(v.BuildStatus)))
+			inprogressids = append(inprogressids, *v.Id)
 		} else {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.RedString(string(result.Builds[i].BuildStatus)))
+			log.Printf("%s [%s]\n", *v.Id, color.RedString(string(v.BuildStatus)))
 		}
 	}
 	return inprogressids
