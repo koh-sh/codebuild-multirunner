@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -144,10 +143,6 @@ type Build struct {
 
 var configfile string
 
-func SetVersionInfo(version, commit, date string) {
-	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
-}
-
 // read yaml config file for builds definition
 func readConfigFile(filepath string) BuildConfig {
 	bc := BuildConfig{}
@@ -165,8 +160,9 @@ func readConfigFile(filepath string) BuildConfig {
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "codebuild-multirunner",
-	Short: "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
+	Use:     "codebuild-multirunner",
+	Version: "v0.0.2",
+	Short:   "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
 	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
 
 This command will read YAML based config file and run multiple CodeBuild projects with oneliner.
