@@ -161,7 +161,7 @@ func readConfigFile(filepath string) BuildConfig {
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "codebuild-multirunner",
-	Version: "v0.0.2",
+	Version: "v0.1.0",
 	Short:   "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
 	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
 

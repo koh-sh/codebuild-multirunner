@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.32
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.21.1
+	github.com/aws/smithy-go v1.14.0
 	github.com/fatih/color v1.15.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/spf13/cobra v1.7.0
@@ -22,7 +23,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.13.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.15.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.21.1 // indirect
-	github.com/aws/smithy-go v1.14.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
