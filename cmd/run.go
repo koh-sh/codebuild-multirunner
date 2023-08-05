@@ -16,17 +16,27 @@ import (
 var nowait bool
 var pollsec int
 
+// interface for AWS API mock
+type CodeBuildAPI interface {
+	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
+}
+
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
 		bc := readConfigFile(configfile)
-		ids := runCodeBuild(bc)
+		client, err := NewAPI()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+		ids := runCodeBuild(client, bc)
 		if !nowait {
 			for i := 0; ; i++ {
 				time.Sleep(time.Duration(pollsec) * time.Second)
-				ids = buildStatusCheck(ids)
+				ids = buildStatusCheck(client, ids)
 				// break if all builds end
 				if len(ids) == 0 {
 					break
@@ -48,12 +58,7 @@ func init() {
 }
 
 // run CodeBuild Projects and return build ids
-func runCodeBuild(bc BuildConfig) []string {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	client := codebuild.NewFromConfig(cfg)
+func runCodeBuild(client CodeBuildAPI, bc BuildConfig) []string {
 	ids := []string{}
 	for i := 0; i < len(bc.Builds); i++ {
 		startbuildinput := convertBuildConfigToStartBuildInput(bc.Builds[i])
@@ -69,6 +74,15 @@ func runCodeBuild(bc BuildConfig) []string {
 	return ids
 }
 
+// return api client
+func NewAPI() (CodeBuildAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return codebuild.NewFromConfig(cfg), nil
+}
+
 // copy configration read from yaml to codebuild.StartBuildInput
 func convertBuildConfigToStartBuildInput(build Build) codebuild.StartBuildInput {
 	startbuildinput := codebuild.StartBuildInput{}
@@ -77,13 +91,8 @@ func convertBuildConfigToStartBuildInput(build Build) codebuild.StartBuildInput 
 }
 
 // check builds status and return ongoing build ids
-func buildStatusCheck(ids []string) []string {
+func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
 	inprogressids := []string{}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	client := codebuild.NewFromConfig(cfg)
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
