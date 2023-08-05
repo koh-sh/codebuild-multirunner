@@ -33,18 +33,20 @@ var runCmd = &cobra.Command{
 			log.Fatalf("error: %v", err)
 		}
 		ids := runCodeBuild(client, bc)
-		if !nowait {
-			for i := 0; ; i++ {
-				time.Sleep(time.Duration(pollsec) * time.Second)
-				ids = buildStatusCheck(client, ids)
-				// break if all builds end
-				if len(ids) == 0 {
-					break
-				}
-				// CodeBuild Timeout is 8h
-				if pollsec*i > 8*60*60 {
-					log.Fatal("Wait Timeout")
-				}
+		// early return if --no-wait option set
+		if nowait {
+			return
+		}
+		for i := 0; ; i++ {
+			time.Sleep(time.Duration(pollsec) * time.Second)
+			ids = buildStatusCheck(client, ids)
+			// break if all builds end
+			if len(ids) == 0 {
+				break
+			}
+			// CodeBuild Timeout is 8h
+			if pollsec*i > 8*60*60 {
+				log.Fatal("Wait Timeout")
 			}
 		}
 	},
