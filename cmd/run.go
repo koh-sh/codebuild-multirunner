@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -33,11 +34,13 @@ var runCmd = &cobra.Command{
 			log.Fatalf("error: %v", err)
 		}
 		ids := []string{}
+		hasfailedbuild := false
 		for _, v := range bc.Builds {
 			startbuildinput := convertBuildConfigToStartBuildInput(v)
 			id, err := runCodeBuild(client, startbuildinput)
 			if err != nil {
 				log.Println(err)
+				hasfailedbuild = true
 			} else {
 				ids = append(ids, id)
 			}
@@ -52,11 +55,18 @@ var runCmd = &cobra.Command{
 				break
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
-			ids = buildStatusCheck(client, ids)
+			failed := false
+			ids, failed = buildStatusCheck(client, ids)
+			if failed {
+				hasfailedbuild = true
+			}
 			// CodeBuild Timeout is 8h
 			if pollsec*i > 8*60*60 {
 				log.Fatal("Wait Timeout")
 			}
+		}
+		if hasfailedbuild {
+			os.Exit(2)
 		}
 	},
 }
@@ -96,8 +106,9 @@ func convertBuildConfigToStartBuildInput(build Build) codebuild.StartBuildInput 
 }
 
 // check builds status and return ongoing build ids
-func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
+func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool) {
 	inprogressids := []string{}
+	hasfailedbuild := false
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
@@ -107,9 +118,11 @@ func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
 		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
 		if v.BuildStatus == "IN_PROGRESS" {
 			inprogressids = append(inprogressids, *v.Id)
+		} else if v.BuildStatus != "SUCCEEDED" {
+			hasfailedbuild = true
 		}
 	}
-	return inprogressids
+	return inprogressids, hasfailedbuild
 }
 
 // return colored string for each CodeBuild statuses
