@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -11,21 +12,47 @@ import (
 	"github.com/fatih/color"
 )
 
-// mock api
-type BatchGetBuildsMockAPI func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+// TODO: get tidy for duplicated mocks
+// mock api for StartBuild
+type StartBuildMockAPI func(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
 
-// StartBuild implements CodeBuildAPI.
-func (m BatchGetBuildsMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
-	panic("unimplemented")
-}
-
-// return m(ctx, params, optFns...)
-func (m BatchGetBuildsMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
-	// return params
+func (m StartBuildMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
 	return m(ctx, params, optFns...)
 }
 
-// return mock function
+func (m StartBuildMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
+	return nil, nil
+}
+
+// return mock function for StartBuild
+func ReturnStartBuildMockAPI(build *types.Build, err error) func(t *testing.T) CodeBuildAPI {
+	mock := func(t *testing.T) CodeBuildAPI {
+		return StartBuildMockAPI(func(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
+			t.Helper()
+			if params.ProjectName == nil {
+				t.Fatal("ProjectName is necessary")
+			}
+			return &codebuild.StartBuildOutput{
+				Build:          build,
+				ResultMetadata: middleware.Metadata{},
+			}, err
+		})
+	}
+	return mock
+}
+
+// mock api for BatchGetBuilds
+type BatchGetBuildsMockAPI func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+
+func (m BatchGetBuildsMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
+	return nil, nil
+}
+
+func (m BatchGetBuildsMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
+	return m(ctx, params, optFns...)
+}
+
+// return mock function for BatchgetBuilds
 func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) CodeBuildAPI {
 	mock := func(t *testing.T) CodeBuildAPI {
 		return BatchGetBuildsMockAPI(func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
@@ -124,6 +151,44 @@ func Test_buildStatusCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := buildStatusCheck(tt.args.client(t), tt.args.ids); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("buildStatusCheck() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_runCodeBuild(t *testing.T) {
+	var project = "project"
+	var id = "project:12345"
+	type args struct {
+		client func(t *testing.T) CodeBuildAPI
+		input  codebuild.StartBuildInput
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{name: "success to start",
+			args:    args{client: ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &project}},
+			want:    id,
+			wantErr: false,
+		},
+		{name: "fail to start",
+			args:    args{client: ReturnStartBuildMockAPI(&types.Build{Id: &id}, errors.New("fail to run")), input: codebuild.StartBuildInput{ProjectName: &project}},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := runCodeBuild(tt.args.client(t), tt.args.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("runCodeBuild() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("runCodeBuild() = %v, want %v", got, tt.want)
 			}
 		})
 	}
