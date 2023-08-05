@@ -101,14 +101,21 @@ func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
 		log.Fatal(err)
 	}
 	for _, v := range result.Builds {
-		if v.BuildStatus == "SUCCEEDED" {
-			log.Printf("%s [%s]\n", *v.Id, color.GreenString(string(v.BuildStatus)))
-		} else if v.BuildStatus == "IN_PROGRESS" {
-			log.Printf("%s [%s]\n", *v.Id, color.BlueString(string(v.BuildStatus)))
+		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
+		if v.BuildStatus == "IN_PROGRESS" {
 			inprogressids = append(inprogressids, *v.Id)
-		} else {
-			log.Printf("%s [%s]\n", *v.Id, color.RedString(string(v.BuildStatus)))
 		}
 	}
 	return inprogressids
+}
+
+// return colored string for each CodeBuild statuses
+func coloredString(status string) string {
+	if status == "SUCCEEDED" {
+		return color.GreenString(status)
+	} else if status == "IN_PROGRESS" {
+		return color.BlueString(status)
+	} else {
+		return color.RedString(status)
+	}
 }
