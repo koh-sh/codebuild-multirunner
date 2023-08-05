@@ -16,25 +16,46 @@ import (
 var nowait bool
 var pollsec int
 
+// interface for AWS API mock
+type CodeBuildAPI interface {
+	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
+}
+
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
 		bc := readConfigFile(configfile)
-		ids := runCodeBuild(bc)
-		if !nowait {
-			for i := 0; ; i++ {
-				time.Sleep(time.Duration(pollsec) * time.Second)
-				ids = buildStatusCheck(ids)
-				// break if all builds end
-				if len(ids) == 0 {
-					break
-				}
-				// CodeBuild Timeout is 8h
-				if pollsec*i > 8*60*60 {
-					log.Fatal("Wait Timeout")
-				}
+		client, err := NewAPI()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+		ids := []string{}
+		for _, v := range bc.Builds {
+			startbuildinput := convertBuildConfigToStartBuildInput(v)
+			id, err := runCodeBuild(client, startbuildinput)
+			if err != nil {
+				log.Println(err)
+			} else {
+				ids = append(ids, id)
+			}
+		}
+		// early return if --no-wait option set
+		if nowait {
+			return
+		}
+		for i := 0; ; i++ {
+			// break if all builds end
+			if len(ids) == 0 {
+				break
+			}
+			time.Sleep(time.Duration(pollsec) * time.Second)
+			ids = buildStatusCheck(client, ids)
+			// CodeBuild Timeout is 8h
+			if pollsec*i > 8*60*60 {
+				log.Fatal("Wait Timeout")
 			}
 		}
 	},
@@ -47,26 +68,24 @@ func init() {
 
 }
 
-// run CodeBuild Projects and return build ids
-func runCodeBuild(bc BuildConfig) []string {
+// run CodeBuild Projects and return build id
+func runCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+	result, err := client.StartBuild(context.TODO(), &input)
+	if err != nil {
+		return "", err
+	}
+	id := *result.Build.Id
+	log.Printf("%s [STARTED]\n", id)
+	return id, err
+}
+
+// return api client
+func NewAPI() (CodeBuildAPI, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		return nil, err
 	}
-	client := codebuild.NewFromConfig(cfg)
-	ids := []string{}
-	for i := 0; i < len(bc.Builds); i++ {
-		startbuildinput := convertBuildConfigToStartBuildInput(bc.Builds[i])
-		result, err := client.StartBuild(context.TODO(), &startbuildinput)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		id := *result.Build.Id
-		ids = append(ids, id)
-		log.Printf("%s [STARTED]\n", id)
-	}
-	return ids
+	return codebuild.NewFromConfig(cfg), nil
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
@@ -77,27 +96,29 @@ func convertBuildConfigToStartBuildInput(build Build) codebuild.StartBuildInput 
 }
 
 // check builds status and return ongoing build ids
-func buildStatusCheck(ids []string) []string {
+func buildStatusCheck(client CodeBuildAPI, ids []string) []string {
 	inprogressids := []string{}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	client := codebuild.NewFromConfig(cfg)
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i := 0; i < len(result.Builds); i++ {
-		if result.Builds[i].BuildStatus == "SUCCEEDED" {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.GreenString(string(result.Builds[i].BuildStatus)))
-		} else if result.Builds[i].BuildStatus == "IN_PROGRESS" {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.BlueString(string(result.Builds[i].BuildStatus)))
-			inprogressids = append(inprogressids, *result.Builds[i].Id)
-		} else {
-			log.Printf("%s [%s]\n", *result.Builds[i].Id, color.RedString(string(result.Builds[i].BuildStatus)))
+	for _, v := range result.Builds {
+		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
+		if v.BuildStatus == "IN_PROGRESS" {
+			inprogressids = append(inprogressids, *v.Id)
 		}
 	}
 	return inprogressids
+}
+
+// return colored string for each CodeBuild statuses
+func coloredString(status string) string {
+	if status == "SUCCEEDED" {
+		return color.GreenString(status)
+	} else if status == "IN_PROGRESS" {
+		return color.BlueString(status)
+	} else {
+		return color.RedString(status)
+	}
 }
