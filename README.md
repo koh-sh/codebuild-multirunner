@@ -8,10 +8,10 @@ This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild
 
 ## Installation
 
-You can install with go install.
+You can install with Homebrew.
 
 ```bash
-go install github.com/koh-sh/codebuild-multirunner@latest
+brew install koh-sh/tap/codebuild-multirunner
 ```
 
 Or download prebuild binary from [Releases](https://github.com/koh-sh/codebuild-multirunner/releases)
