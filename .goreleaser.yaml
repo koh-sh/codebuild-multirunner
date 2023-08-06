@@ -39,6 +39,11 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^chore:'
+brews:
+  - tap:
+      owner: koh-sh
+      name: homebrew-tap
+      token: "{{ .Env.PAT }}"
 
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
