@@ -58,6 +58,9 @@ func getCloudWatchLogSetting(client CodeBuildAPI, id string) (string, string, er
 	if err != nil {
 		return "", "", err
 	}
+	if len(result.Builds) == 0 {
+		return "", "", fmt.Errorf("%v is not found", id)
+	}
 	build := result.Builds[0].Logs
 	if build.CloudWatchLogs.Status == "DISABLED" {
 		return "", "", fmt.Errorf("CloudWatch Logs for %v is Disabled", id)
