@@ -24,7 +24,7 @@ var runCmd = &cobra.Command{
 		bc := readConfigFile(configfile)
 		client, err := NewCodeBuildAPI()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal(err)
 		}
 		ids := []string{}
 		hasfailedbuild := false

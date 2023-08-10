@@ -27,7 +27,7 @@ func init() {
 func dumpConfig(bc BuildConfig) string {
 	d, err := yaml.Marshal(&bc)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal(err)
 	}
 	return string(d)
 }

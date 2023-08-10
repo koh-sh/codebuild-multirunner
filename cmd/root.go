@@ -186,12 +186,12 @@ func readConfigFile(filepath string) BuildConfig {
 	bc := BuildConfig{}
 	b, err := os.ReadFile(filepath)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal(err)
 	}
 	expanded := os.ExpandEnv(string(b))
 	err = yaml.Unmarshal([]byte(expanded), &bc)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal(err)
 	}
 	return bc
 }
