@@ -1,61 +1,33 @@
-package cmd
+package cwlog
 
 import (
-	"context"
 	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	cwltypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
+	root "github.com/koh-sh/codebuild-multirunner/cmd"
 )
-
-// ReturnBatchGetBuildsMockAPI is defined in run_test.go
-// TODO: get tidy
-
-// mock api for GetLogEvents
-type GetLogEventsMockAPI func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
-
-func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-	return m(ctx, params, optFns...)
-}
-
-// return mock function for GetLogEvents
-func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) CWLGetLogEventsAPI {
-	mock := func(t *testing.T) CWLGetLogEventsAPI {
-		return GetLogEventsMockAPI(func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-			t.Helper()
-			if *params.LogGroupName == "" || *params.LogStreamName == "" {
-				t.Fatal("you must supply a logGroupName and logStreamName")
-			}
-			return &cloudwatchlogs.GetLogEventsOutput{
-				Events:            events,
-				NextBackwardToken: nil,
-				NextForwardToken:  nil,
-			}, nil
-		})
-	}
-	return mock
-}
 
 func Test_getCloudWatchLogSetting(t *testing.T) {
 	var id = "project:12345678"
 	var group = "/aws/codebuild/project"
 	var stream = "12345678"
-	var enabledClient = ReturnBatchGetBuildsMockAPI([]types.Build{
+	var enabledClient = root.ReturnBatchGetBuildsMockAPI([]types.Build{
 		{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "ENABLED"},
 			GroupName:  &group,
 			StreamName: &stream},
 		},
 	})
-	var disabledClient = ReturnBatchGetBuildsMockAPI([]types.Build{
+	var disabledClient = root.ReturnBatchGetBuildsMockAPI([]types.Build{
 		{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "DISABLED"},
 			GroupName:  &group,
 			StreamName: &stream},
 		},
 	})
 	type args struct {
-		client CodeBuildAPI
+		client root.CodeBuildAPI
 		id     string
 	}
 	tests := []struct {
@@ -114,10 +86,10 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 			Timestamp:     new(int64),
 		},
 	}
-	var successClient = ReturnGetLogEventsMockAPI(wantOutput)
-	var failClient = ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{})
+	var successClient = root.ReturnGetLogEventsMockAPI(wantOutput)
+	var failClient = root.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{})
 	type args struct {
-		client CWLGetLogEventsAPI
+		client root.CWLGetLogEventsAPI
 		group  string
 		stream string
 	}
