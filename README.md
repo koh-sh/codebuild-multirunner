@@ -116,3 +116,23 @@ builds:
 ```
 
 Refer to [sample config file](config.yaml)
+
+And `log` is useful to get detail of a build.
+
+CloudWatch Logs need to be ENABLED for the build.
+
+```bash
+% codebuild-multirunner log --id testproject:33719fff-7ee7-4828-9c6a-ec814226e3fc
+[Container] 2023/08/11 02:53:03 Waiting for agent ping
+[Container] 2023/08/11 02:53:04 Waiting for DOWNLOAD_SOURCE
+[Container] 2023/08/11 02:53:05 Phase is DOWNLOAD_SOURCE
+[Container] 2023/08/11 02:53:05 CODEBUILD_SRC_DIR=/codebuild/output/src3794654258/src
+...
+(omitted)
+...
+[Container] 2023/08/11 02:53:15 Phase context status code:  Message:
+[Container] 2023/08/11 02:53:15 Entering phase POST_BUILD
+[Container] 2023/08/11 02:53:15 Phase complete: POST_BUILD State: SUCCEEDED
+[Container] 2023/08/11 02:53:15 Phase context status code:  Message:
+%
+```
