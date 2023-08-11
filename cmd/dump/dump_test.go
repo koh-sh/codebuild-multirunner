@@ -1,10 +1,14 @@
-package cmd
+package dump
 
-import "testing"
+import (
+	"testing"
+
+	root "github.com/koh-sh/codebuild-multirunner/cmd"
+)
 
 func Test_dumpConfig(t *testing.T) {
 	type args struct {
-		bc BuildConfig
+		bc root.BuildConfig
 	}
 	tests := []struct {
 		name string
@@ -12,7 +16,7 @@ func Test_dumpConfig(t *testing.T) {
 		want string
 	}{
 		{name: "basic",
-			args: args{BuildConfig{[]Build{
+			args: args{root.BuildConfig{Builds: []root.Build{
 				{ProjectName: "testproject", SourceVersion: "chore/test"},
 				{ProjectName: "testproject2"},
 			},

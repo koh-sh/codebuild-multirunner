@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
 	"github.com/jinzhu/copier"
+	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -21,8 +22,8 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc := readConfigFile(configfile)
-		client, err := NewCodeBuildAPI()
+		bc := root.ReadConfigFile(root.Configfile)
+		client, err := root.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,14 +66,14 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(runCmd)
+	root.RootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	runCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
 
 }
 
 // run CodeBuild Projects and return build id
-func runCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+func runCodeBuild(client root.CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
 	result, err := client.StartBuild(context.TODO(), &input)
 	if err != nil {
 		return "", err
@@ -83,14 +84,14 @@ func runCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string,
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
-func convertBuildConfigToStartBuildInput(build Build) codebuild.StartBuildInput {
+func convertBuildConfigToStartBuildInput(build root.Build) codebuild.StartBuildInput {
 	startbuildinput := codebuild.StartBuildInput{}
 	copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	return startbuildinput
 }
 
 // check builds status and return ongoing build ids
-func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool) {
+func buildStatusCheck(client root.CodeBuildAPI, ids []string) ([]string, bool) {
 	inprogressids := []string{}
 	hasfailedbuild := false
 	input := codebuild.BatchGetBuildsInput{Ids: ids}

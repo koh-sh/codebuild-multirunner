@@ -40,6 +40,7 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^wip:'
+      - '^refactor:'
       - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch

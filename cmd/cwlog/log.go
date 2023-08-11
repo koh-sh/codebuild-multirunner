@@ -1,4 +1,4 @@
-package cmd
+package cwlog
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
+	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,7 @@ Only CloudWatch Logs is supported.
 S3 Log is not supported`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		cbclient, err := NewCodeBuildAPI()
+		cbclient, err := root.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -31,7 +32,7 @@ S3 Log is not supported`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		cwlclient, err := NewCloudWatchLogsAPI()
+		cwlclient, err := root.NewCloudWatchLogsAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,13 +47,13 @@ S3 Log is not supported`,
 }
 
 func init() {
-	rootCmd.AddCommand(logCmd)
+	root.RootCmd.AddCommand(logCmd)
 	logCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for getting log")
 	logCmd.MarkFlagRequired("id")
 }
 
 // get CloudWatch Log settings from a build and return logGroupName, logStreamName and error
-func getCloudWatchLogSetting(client CodeBuildAPI, id string) (string, string, error) {
+func getCloudWatchLogSetting(client root.CodeBuildAPI, id string) (string, string, error) {
 	input := codebuild.BatchGetBuildsInput{Ids: []string{id}}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
@@ -69,7 +70,7 @@ func getCloudWatchLogSetting(client CodeBuildAPI, id string) (string, string, er
 }
 
 // get CloudWatchLog events and return GetLogEventsOutput
-func getCloudWatchLogEvents(client CWLGetLogEventsAPI, group string, stream string) (cloudwatchlogs.GetLogEventsOutput, error) {
+func getCloudWatchLogEvents(client root.CWLGetLogEventsAPI, group string, stream string) (cloudwatchlogs.GetLogEventsOutput, error) {
 	if group == "" || stream == "" {
 		return cloudwatchlogs.GetLogEventsOutput{}, errors.New("you must supply a logGroupName and logStreamName")
 	}
