@@ -7,6 +7,11 @@ import (
 )
 
 func Test_dumpConfig(t *testing.T) {
+	wantyaml := `builds:
+    - projectName: testproject
+      sourceVersion: chore/test
+    - projectName: testproject2
+`
 	type args struct {
 		bc root.BuildConfig
 	}
@@ -22,11 +27,7 @@ func Test_dumpConfig(t *testing.T) {
 			},
 			},
 			},
-			want: `builds:
-    - projectName: testproject
-      sourceVersion: chore/test
-    - projectName: testproject2
-`,
+			want: wantyaml,
 		},
 	}
 	for _, tt := range tests {
