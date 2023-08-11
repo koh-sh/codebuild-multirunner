@@ -17,14 +17,93 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// options
+var Configfile string
+
+// rootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
+	Use:   "codebuild-multirunner",
+	Short: "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
+	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
+
+This command will read YAML based config file and run multiple CodeBuild projects with oneliner.
+`,
+}
+
+func Execute() {
+	err := RootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	RootCmd.PersistentFlags().StringVar(&Configfile, "config", "./config.yaml", "file path for config file.")
+}
+
+// set version from goreleaser variables
+func SetVersionInfo(version, commit, date string) {
+	RootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
+}
+
+//
+// types and functions shared within subcommands
+//
+
+// interface for AWS CodeBuild API
+type CodeBuildAPI interface {
+	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
+}
+
+// interface for AWS CloudWatch Logs API
+type CWLGetLogEventsAPI interface {
+	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
+}
+
+// return CodeBuild api client
+func NewCodeBuildAPI() (CodeBuildAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return codebuild.NewFromConfig(cfg), nil
+}
+
+// return CloudWatchLogs api client
+func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return cloudwatchlogs.NewFromConfig(cfg), nil
+}
+
+// read yaml config file for builds definition
+func ReadConfigFile(filepath string) BuildConfig {
+	bc := BuildConfig{}
+	b, err := os.ReadFile(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	expanded := os.ExpandEnv(string(b))
+	err = yaml.Unmarshal([]byte(expanded), &bc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bc
+}
+
+//
+// types for CodeBuild parameter override. defined to use yaml tags
+// https://docs.aws.amazon.com/codebuild/latest/APIReference/API_StartBuild.html
+//
+
 // list of Builds
 type BuildConfig struct {
 	Builds []Build `yaml:"builds"`
 }
 
-// types for CodeBuild parameter override
-// defined to use yaml tags
-// https://docs.aws.amazon.com/codebuild/latest/APIReference/API_StartBuild.html
 type ArtifactsOverride struct {
 	ArtifactIdentifier   string `yaml:"artifactIdentifier,omitempty"`
 	BucketOwnerAccess    string `yaml:"bucketOwnerAccess,omitempty"`
@@ -150,6 +229,11 @@ type Build struct {
 	TimeoutInMinutesOverride         int                               `yaml:"timeoutInMinutesOverride,omitempty"`
 }
 
+//
+// some types and functions for AWS SDK Mock. used only for testing
+//
+
+// mock api for StartBuild
 type StartBuildMockAPI func(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
 
 func (m StartBuildMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
@@ -158,6 +242,24 @@ func (m StartBuildMockAPI) StartBuild(ctx context.Context, params *codebuild.Sta
 
 func (m StartBuildMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
 	return nil, nil
+}
+
+// mock api for BatchGetBuilds
+type BatchGetBuildsMockAPI func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+
+func (m BatchGetBuildsMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
+	return nil, nil
+}
+
+func (m BatchGetBuildsMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
+	return m(ctx, params, optFns...)
+}
+
+// mock api for GetLogEvents
+type GetLogEventsMockAPI func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
+
+func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
+	return m(ctx, params, optFns...)
 }
 
 // return mock function for StartBuild
@@ -175,17 +277,6 @@ func ReturnStartBuildMockAPI(build *types.Build, err error) func(t *testing.T) C
 		})
 	}
 	return mock
-}
-
-// mock api for BatchGetBuilds
-type BatchGetBuildsMockAPI func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
-
-func (m BatchGetBuildsMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
-	return nil, nil
-}
-
-func (m BatchGetBuildsMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
-	return m(ctx, params, optFns...)
 }
 
 // return mock function for BatchgetBuilds
@@ -206,13 +297,6 @@ func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) CodeBu
 	return mock
 }
 
-// mock api for GetLogEvents
-type GetLogEventsMockAPI func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
-
-func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-	return m(ctx, params, optFns...)
-}
-
 // return mock function for GetLogEvents
 func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) CWLGetLogEventsAPI {
 	mock := func(t *testing.T) CWLGetLogEventsAPI {
@@ -229,75 +313,4 @@ func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing
 		})
 	}
 	return mock
-}
-
-var Configfile string
-
-func SetVersionInfo(version, commit, date string) {
-	RootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
-}
-
-// interface for AWS CodeBuild API mock
-type CodeBuildAPI interface {
-	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
-	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
-}
-
-// interface for AWS CloudWatch Logs API mock
-type CWLGetLogEventsAPI interface {
-	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
-}
-
-// return CodeBuild api client
-func NewCodeBuildAPI() (CodeBuildAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return codebuild.NewFromConfig(cfg), nil
-}
-
-// return CodeBuild api client
-func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return cloudwatchlogs.NewFromConfig(cfg), nil
-}
-
-// read yaml config file for builds definition
-func ReadConfigFile(filepath string) BuildConfig {
-	bc := BuildConfig{}
-	b, err := os.ReadFile(filepath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	expanded := os.ExpandEnv(string(b))
-	err = yaml.Unmarshal([]byte(expanded), &bc)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return bc
-}
-
-// rootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "codebuild-multirunner",
-	Short: "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
-	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
-
-This command will read YAML based config file and run multiple CodeBuild projects with oneliner.
-`,
-}
-
-func Execute() {
-	err := RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
-func init() {
-	RootCmd.PersistentFlags().StringVar(&Configfile, "config", "./config.yaml", "file path for config file.")
 }

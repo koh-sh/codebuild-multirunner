@@ -14,20 +14,8 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 	var id = "project:12345678"
 	var group = "/aws/codebuild/project"
 	var stream = "12345678"
-	var enabledClient = root.ReturnBatchGetBuildsMockAPI([]types.Build{
-		{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "ENABLED"},
-			GroupName:  &group,
-			StreamName: &stream},
-		},
-	})
-	var disabledClient = root.ReturnBatchGetBuildsMockAPI([]types.Build{
-		{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "DISABLED"},
-			GroupName:  &group,
-			StreamName: &stream},
-		},
-	})
 	type args struct {
-		client root.CodeBuildAPI
+		client func(t *testing.T) root.CodeBuildAPI
 		id     string
 	}
 	tests := []struct {
@@ -38,13 +26,23 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "enabled",
-			args:    args{enabledClient(t), id},
-			want:    "/aws/codebuild/project",
-			want1:   "12345678",
+			args: args{client: root.ReturnBatchGetBuildsMockAPI([]types.Build{
+				{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "ENABLED"},
+					GroupName:  &group,
+					StreamName: &stream},
+				},
+			}), id: id},
+			want:    group,
+			want1:   stream,
 			wantErr: false,
 		},
 		{name: "disabled",
-			args:    args{disabledClient(t), id},
+			args: args{client: root.ReturnBatchGetBuildsMockAPI([]types.Build{
+				{Logs: &types.LogsLocation{CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "DISABLED"},
+					GroupName:  &group,
+					StreamName: &stream},
+				},
+			}), id: id},
 			want:    "",
 			want1:   "",
 			wantErr: true,
@@ -52,7 +50,7 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := getCloudWatchLogSetting(tt.args.client, tt.args.id)
+			got, got1, err := getCloudWatchLogSetting(tt.args.client(t), tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getCloudWatchLogSetting() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -86,10 +84,8 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 			Timestamp:     new(int64),
 		},
 	}
-	var successClient = root.ReturnGetLogEventsMockAPI(wantOutput)
-	var failClient = root.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{})
 	type args struct {
-		client root.CWLGetLogEventsAPI
+		client func(t *testing.T) root.CWLGetLogEventsAPI
 		group  string
 		stream string
 	}
@@ -100,7 +96,7 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "success",
-			args: args{successClient(t), "/aws/codebuild/project", "12345678"},
+			args: args{client: root.ReturnGetLogEventsMockAPI(wantOutput), group: "/aws/codebuild/project", stream: "12345678"},
 			want: cloudwatchlogs.GetLogEventsOutput{
 				Events:            wantOutput,
 				NextBackwardToken: nil,
@@ -108,13 +104,13 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 			},
 			wantErr: false},
 		{name: "fail",
-			args:    args{failClient(t), "", ""},
+			args:    args{client: root.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "", stream: ""},
 			want:    cloudwatchlogs.GetLogEventsOutput{},
 			wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getCloudWatchLogEvents(tt.args.client, tt.args.group, tt.args.stream)
+			got, err := getCloudWatchLogEvents(tt.args.client(t), tt.args.group, tt.args.stream)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getCloudWatchLogEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
