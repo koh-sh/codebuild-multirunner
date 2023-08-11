@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -148,17 +152,46 @@ func SetVersionInfo(version, commit, date string) {
 	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
 }
 
+// interface for AWS CodeBuild API mock
+type CodeBuildAPI interface {
+	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
+}
+
+// interface for AWS CloudWatch Logs API mock
+type CWLGetLogEventsAPI interface {
+	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
+}
+
+// return CodeBuild api client
+func NewCodeBuildAPI() (CodeBuildAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return codebuild.NewFromConfig(cfg), nil
+}
+
+// return CodeBuild api client
+func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return cloudwatchlogs.NewFromConfig(cfg), nil
+}
+
 // read yaml config file for builds definition
 func readConfigFile(filepath string) BuildConfig {
 	bc := BuildConfig{}
 	b, err := os.ReadFile(filepath)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal(err)
 	}
 	expanded := os.ExpandEnv(string(b))
 	err = yaml.Unmarshal([]byte(expanded), &bc)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal(err)
 	}
 	return bc
 }

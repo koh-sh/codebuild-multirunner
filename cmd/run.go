@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
 	"github.com/jinzhu/copier"
@@ -17,21 +16,15 @@ import (
 var nowait bool
 var pollsec int
 
-// interface for AWS API mock
-type CodeBuildAPI interface {
-	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
-	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
-}
-
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
 		bc := readConfigFile(configfile)
-		client, err := NewAPI()
+		client, err := NewCodeBuildAPI()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal(err)
 		}
 		ids := []string{}
 		hasfailedbuild := false
@@ -87,15 +80,6 @@ func runCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string,
 	id := *result.Build.Id
 	log.Printf("%s [STARTED]\n", id)
 	return id, err
-}
-
-// return api client
-func NewAPI() (CodeBuildAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return codebuild.NewFromConfig(cfg), nil
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
