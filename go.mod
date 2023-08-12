@@ -1,6 +1,8 @@
 module github.com/koh-sh/codebuild-multirunner
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.33
