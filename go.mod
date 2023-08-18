@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.33
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.23.2
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.21.2
-	github.com/aws/smithy-go v1.14.1
+	github.com/aws/smithy-go v1.14.2
 	github.com/fatih/color v1.15.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/spf13/cobra v1.7.0
