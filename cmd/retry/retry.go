@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
-	"github.com/fatih/color"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
+	"github.com/koh-sh/codebuild-multirunner/common"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var retryCmd = &cobra.Command{
 	Use:   "retry",
 	Short: "retry CodeBuild build with a provided id",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := root.NewCodeBuildAPI()
+		client, err := common.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -43,7 +43,7 @@ var retryCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed = buildStatusCheck(client, ids)
+			ids, failed = common.BuildStatusCheck(client, ids)
 			if failed {
 				hasfailedbuild = true
 			}
@@ -63,7 +63,7 @@ func init() {
 }
 
 // retry CodeBuild build
-func retryCodeBuild(client root.CodeBuildAPI, id string) (string, error) {
+func retryCodeBuild(client common.CodeBuildAPI, id string) (string, error) {
 	input := codebuild.RetryBuildInput{Id: &id}
 	result, err := client.RetryBuild(context.TODO(), &input)
 	if err != nil {
@@ -72,35 +72,4 @@ func retryCodeBuild(client root.CodeBuildAPI, id string) (string, error) {
 	buildid := *result.Build.Id
 	log.Printf("%s [STARTED]\n", buildid)
 	return buildid, err
-}
-
-// check builds status and return ongoing build ids
-func buildStatusCheck(client root.CodeBuildAPI, ids []string) ([]string, bool) {
-	inprogressids := []string{}
-	hasfailedbuild := false
-	input := codebuild.BatchGetBuildsInput{Ids: ids}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, v := range result.Builds {
-		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
-		if v.BuildStatus == "IN_PROGRESS" {
-			inprogressids = append(inprogressids, *v.Id)
-		} else if v.BuildStatus != "SUCCEEDED" {
-			hasfailedbuild = true
-		}
-	}
-	return inprogressids, hasfailedbuild
-}
-
-// return colored string for each CodeBuild statuses
-func coloredString(status string) string {
-	if status == "SUCCEEDED" {
-		return color.GreenString(status)
-	} else if status == "IN_PROGRESS" {
-		return color.BlueString(status)
-	} else {
-		return color.RedString(status)
-	}
 }

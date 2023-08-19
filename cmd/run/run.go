@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
-	"github.com/fatih/color"
 	"github.com/jinzhu/copier"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
+	"github.com/koh-sh/codebuild-multirunner/common"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +22,8 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc := root.ReadConfigFile(root.Configfile)
-		client, err := root.NewCodeBuildAPI()
+		bc := common.ReadConfigFile(root.Configfile)
+		client, err := common.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -50,13 +50,9 @@ var runCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed = buildStatusCheck(client, ids)
+			ids, failed = common.BuildStatusCheck(client, ids)
 			if failed {
 				hasfailedbuild = true
-			}
-			// CodeBuild Timeout is 8h
-			if pollsec*i > 8*60*60 {
-				log.Fatal("Wait Timeout")
 			}
 		}
 		if hasfailedbuild {
@@ -73,7 +69,7 @@ func init() {
 }
 
 // run CodeBuild Projects and return build id
-func runCodeBuild(client root.CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+func runCodeBuild(client common.CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
 	result, err := client.StartBuild(context.TODO(), &input)
 	if err != nil {
 		return "", err
@@ -84,39 +80,8 @@ func runCodeBuild(client root.CodeBuildAPI, input codebuild.StartBuildInput) (st
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
-func convertBuildConfigToStartBuildInput(build root.Build) codebuild.StartBuildInput {
+func convertBuildConfigToStartBuildInput(build common.Build) codebuild.StartBuildInput {
 	startbuildinput := codebuild.StartBuildInput{}
 	copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	return startbuildinput
-}
-
-// check builds status and return ongoing build ids
-func buildStatusCheck(client root.CodeBuildAPI, ids []string) ([]string, bool) {
-	inprogressids := []string{}
-	hasfailedbuild := false
-	input := codebuild.BatchGetBuildsInput{Ids: ids}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, v := range result.Builds {
-		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
-		if v.BuildStatus == "IN_PROGRESS" {
-			inprogressids = append(inprogressids, *v.Id)
-		} else if v.BuildStatus != "SUCCEEDED" {
-			hasfailedbuild = true
-		}
-	}
-	return inprogressids, hasfailedbuild
-}
-
-// return colored string for each CodeBuild statuses
-func coloredString(status string) string {
-	if status == "SUCCEEDED" {
-		return color.GreenString(status)
-	} else if status == "IN_PROGRESS" {
-		return color.BlueString(status)
-	} else {
-		return color.RedString(status)
-	}
 }
