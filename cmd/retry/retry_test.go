@@ -8,7 +8,7 @@ import (
 )
 
 func Test_retryCodeBuild(t *testing.T) {
-	var id1 = "project:12345678"
+	id1 := "project:12345678"
 	type args struct {
 		client func(t *testing.T) common.CodeBuildAPI
 		id     string
@@ -19,10 +19,12 @@ func Test_retryCodeBuild(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{name: "basic",
+		{
+			name:    "basic",
 			args:    args{client: common.ReturnRetryBuildMockAPI(types.Build{Id: &id1}), id: id1},
 			want:    id1,
-			wantErr: false},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

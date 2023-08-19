@@ -19,7 +19,8 @@ func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 		args args
 		want codebuild.StartBuildInput
 	}{
-		{name: "basic",
+		{
+			name: "basic",
 			args: args{common.Build{}},
 			want: codebuild.StartBuildInput{},
 		},
@@ -34,8 +35,8 @@ func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 }
 
 func Test_runCodeBuild(t *testing.T) {
-	var project = "project"
-	var id = "project:12345"
+	project := "project"
+	id := "project:12345"
 	type args struct {
 		client func(t *testing.T) common.CodeBuildAPI
 		input  codebuild.StartBuildInput
@@ -46,12 +47,14 @@ func Test_runCodeBuild(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{name: "success to start",
+		{
+			name:    "success to start",
 			args:    args{client: common.ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &project}},
 			want:    id,
 			wantErr: false,
 		},
-		{name: "fail to start",
+		{
+			name:    "fail to start",
 			args:    args{client: common.ReturnStartBuildMockAPI(&types.Build{Id: &id}, errors.New("fail to run")), input: codebuild.StartBuildInput{ProjectName: &project}},
 			want:    "",
 			wantErr: true,

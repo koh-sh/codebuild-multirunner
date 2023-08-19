@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"gopkg.in/yaml.v3"
-
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	"github.com/koh-sh/codebuild-multirunner/common"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 // dumpCmd represents the dump command

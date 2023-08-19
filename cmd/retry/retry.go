@@ -13,9 +13,11 @@ import (
 )
 
 // options
-var id string
-var nowait bool
-var pollsec int
+var (
+	id      string
+	nowait  bool
+	pollsec int
+)
 
 // retryCmd represents the retry command
 var retryCmd = &cobra.Command{
@@ -59,7 +61,7 @@ func init() {
 	retryCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	retryCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
 	retryCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for retry")
-	retryCmd.MarkFlagRequired("id") //nolint:errcheck
+	retryCmd.MarkFlagRequired("id")
 }
 
 // retry CodeBuild build

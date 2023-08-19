@@ -20,12 +20,15 @@ func Test_dumpConfig(t *testing.T) {
 		args args
 		want string
 	}{
-		{name: "basic",
-			args: args{common.BuildConfig{Builds: []common.Build{
-				{ProjectName: "testproject", SourceVersion: "chore/test"},
-				{ProjectName: "testproject2"},
-			},
-			},
+		{
+			name: "basic",
+			args: args{
+				common.BuildConfig{
+					Builds: []common.Build{
+						{ProjectName: "testproject", SourceVersion: "chore/test"},
+						{ProjectName: "testproject2"},
+					},
+				},
 			},
 			want: wantyaml,
 		},
