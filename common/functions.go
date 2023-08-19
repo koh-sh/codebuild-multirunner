@@ -83,11 +83,12 @@ func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool) {
 
 // return colored string for each CodeBuild statuses
 func coloredString(status string) string {
-	if status == "SUCCEEDED" {
+	switch status {
+	case "SUCCEEDED":
 		return color.GreenString(status)
-	} else if status == "IN_PROGRESS" {
+	case "IN_PROGRESS":
 		return color.BlueString(status)
-	} else {
+	default:
 		return color.RedString(status)
 	}
 }

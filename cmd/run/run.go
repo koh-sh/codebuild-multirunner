@@ -14,8 +14,10 @@ import (
 )
 
 // options
-var nowait bool
-var pollsec int
+var (
+	nowait  bool
+	pollsec int
+)
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -65,7 +67,6 @@ func init() {
 	root.RootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	runCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
-
 }
 
 // run CodeBuild Projects and return build id

@@ -51,7 +51,7 @@ S3 Log is not supported`,
 func init() {
 	root.RootCmd.AddCommand(logCmd)
 	logCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for getting log")
-	logCmd.MarkFlagRequired("id") //nolint:errcheck
+	logCmd.MarkFlagRequired("id")
 }
 
 // get CloudWatch Log settings from a build and return logGroupName, logStreamName and error

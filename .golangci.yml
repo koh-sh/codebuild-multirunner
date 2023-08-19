@@ -1,0 +1,14 @@
+linters:
+  enable:
+    - asciicheck
+    - gci
+    - gocritic
+    - gofumpt
+    - misspell
+    - nolintlint
+    - predeclared
+    - unconvert
+linters-settings:
+  errcheck:
+    exclude-functions:
+      - (*github.com/spf13/cobra.Command).MarkFlagRequired
