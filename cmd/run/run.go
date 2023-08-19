@@ -82,6 +82,9 @@ func runCodeBuild(client common.CodeBuildAPI, input codebuild.StartBuildInput) (
 // copy configration read from yaml to codebuild.StartBuildInput
 func convertBuildConfigToStartBuildInput(build common.Build) codebuild.StartBuildInput {
 	startbuildinput := codebuild.StartBuildInput{}
-	copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return startbuildinput
 }

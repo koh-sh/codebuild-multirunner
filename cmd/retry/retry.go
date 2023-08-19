@@ -59,7 +59,7 @@ func init() {
 	retryCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	retryCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
 	retryCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for retry")
-	retryCmd.MarkFlagRequired("id")
+	retryCmd.MarkFlagRequired("id") //nolint:errcheck
 }
 
 // retry CodeBuild build
