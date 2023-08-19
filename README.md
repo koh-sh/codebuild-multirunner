@@ -53,6 +53,8 @@ builds:
   - projectName: testproject
 ```
 
+### Run
+
 Then execute command with "run" subcommand, so your CodeBuild project will be running.
 
 ```bash
@@ -117,6 +119,8 @@ builds:
 
 Refer to [sample config file](config.yaml)
 
+### Get build log
+
 And `log` is useful to get detail of a build.
 
 CloudWatch Logs need to be ENABLED for the build.
@@ -135,4 +139,14 @@ CloudWatch Logs need to be ENABLED for the build.
 [Container] 2023/08/11 02:53:15 Phase complete: POST_BUILD State: SUCCEEDED
 [Container] 2023/08/11 02:53:15 Phase context status code:  Message:
 %
+```
+
+### Retry past builds
+
+You can retry a past build.
+
+```bash
+% codebuild-multirunner retry --id testproject:8948df1b-1352-4f87-bc68-318a37a7949b
+2023/08/19 14:52:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [STARTED]
+2023/08/19 14:53:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [SUCCEEDED]
 ```
