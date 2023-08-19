@@ -30,6 +30,8 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   dump        dump config for running CodeBuild projects
   help        Help about any command
+  log         Print CodeBuild log for a single build with a provided id.
+  retry       retry CodeBuild build with a provided id
   run         run CodeBuild projects based on YAML
 
 Flags:
