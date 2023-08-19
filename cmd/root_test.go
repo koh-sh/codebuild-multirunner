@@ -15,7 +15,7 @@ func Test_readConfigFile(t *testing.T) {
 		want BuildConfig
 	}{
 		{name: "basic",
-			args: args{"testfiles/_test.yaml"},
+			args: args{"testdata/_test.yaml"},
 			want: BuildConfig{[]Build{
 				{ProjectName: "testproject", SourceVersion: "chore/test"},
 				{ProjectName: "testproject2"},
@@ -23,7 +23,7 @@ func Test_readConfigFile(t *testing.T) {
 			},
 		},
 		{name: "environment variable",
-			args: args{"testfiles/_test2.yaml"},
+			args: args{"testdata/_test2.yaml"},
 			want: BuildConfig{[]Build{
 				{ProjectName: "testproject3", SourceVersion: "chore/test"},
 				{ProjectName: "testproject2"},
