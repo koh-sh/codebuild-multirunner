@@ -38,12 +38,24 @@ S3 Log is not supported`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		res, err := getCloudWatchLogEvents(cwlclient, group, stream)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for _, event := range res.Events {
-			fmt.Print(*event.Message)
+		// first request will be invoked without token
+		token := ""
+		for {
+			res, err := getCloudWatchLogEvents(cwlclient, group, stream, token)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// NextForwardToken is..
+			// The token for the next set of items in the forward direction. The token expires
+			// after 24 hours. If you have reached the end of the stream, it returns the same
+			// token you passed in.
+			if *res.NextForwardToken == token {
+				break
+			}
+			token = *res.NextForwardToken
+			for _, event := range res.Events {
+				fmt.Print(*event.Message)
+			}
 		}
 	},
 }
@@ -72,13 +84,18 @@ func getCloudWatchLogSetting(client common.CodeBuildAPI, id string) (string, str
 }
 
 // get CloudWatchLog events and return GetLogEventsOutput
-func getCloudWatchLogEvents(client common.CWLGetLogEventsAPI, group string, stream string) (cloudwatchlogs.GetLogEventsOutput, error) {
+func getCloudWatchLogEvents(client common.CWLGetLogEventsAPI, group string, stream string, token string) (cloudwatchlogs.GetLogEventsOutput, error) {
+	startfromhead := true
 	if group == "" || stream == "" {
 		return cloudwatchlogs.GetLogEventsOutput{}, errors.New("you must supply a logGroupName and logStreamName")
 	}
 	input := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  &group,
 		LogStreamName: &stream,
+		StartFromHead: &startfromhead,
+	}
+	if token != "" {
+		input.NextToken = &token
 	}
 	result, err := client.GetLogEvents(context.TODO(), input)
 	if err != nil {
