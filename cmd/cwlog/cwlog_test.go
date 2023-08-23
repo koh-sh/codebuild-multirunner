@@ -55,6 +55,20 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 			want1:   "",
 			wantErr: true,
 		},
+		{
+			name:    "not found",
+			args:    args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: id},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+		{
+			name:    "api error",
+			args:    args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: "error"},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,8 +139,14 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "fail",
+			name:    "empty group or stream",
 			args:    args{client: common.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "", stream: "", token: ""},
+			want:    cloudwatchlogs.GetLogEventsOutput{},
+			wantErr: true,
+		},
+		{
+			name:    "api error",
+			args:    args{client: common.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "error", stream: "error", token: ""},
 			want:    cloudwatchlogs.GetLogEventsOutput{},
 			wantErr: true,
 		},

@@ -25,6 +25,12 @@ func Test_retryCodeBuild(t *testing.T) {
 			want:    id1,
 			wantErr: false,
 		},
+		{
+			name:    "api error",
+			args:    args{client: common.ReturnRetryBuildMockAPI(types.Build{}), id: "error"},
+			want:    "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
@@ -69,28 +70,27 @@ func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatc
 
 // return mock function for StartBuild
 func ReturnStartBuildMockAPI(build *types.Build, err error) func(t *testing.T) CodeBuildAPI {
-	mock := func(t *testing.T) CodeBuildAPI {
+	return func(t *testing.T) CodeBuildAPI {
 		return StartBuildMockAPI(func(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
-			t.Helper()
-			if params.ProjectName == nil {
-				t.Fatal("ProjectName is necessary")
+			// for error case
+			if *params.ProjectName == "error" {
+				return nil, fmt.Errorf("error")
 			}
 			return &codebuild.StartBuildOutput{
 				Build:          build,
 				ResultMetadata: middleware.Metadata{},
-			}, err
+			}, nil
 		})
 	}
-	return mock
 }
 
 // return mock function for BatchgetBuilds
 func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) CodeBuildAPI {
-	mock := func(t *testing.T) CodeBuildAPI {
+	return func(t *testing.T) CodeBuildAPI {
 		return BatchGetBuildsMockAPI(func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
-			t.Helper()
-			if len(params.Ids) == 0 {
-				t.Fatal("Ids must have at least one")
+			// for error case
+			if params.Ids[0] == "error" {
+				return nil, fmt.Errorf("error")
 			}
 			return &codebuild.BatchGetBuildsOutput{
 				Builds:         builds,
@@ -99,16 +99,15 @@ func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) CodeBu
 			}, nil
 		})
 	}
-	return mock
 }
 
 // return mock function for GetLogEvents
 func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) CWLGetLogEventsAPI {
-	mock := func(t *testing.T) CWLGetLogEventsAPI {
+	return func(t *testing.T) CWLGetLogEventsAPI {
 		return GetLogEventsMockAPI(func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-			t.Helper()
-			if *params.LogGroupName == "" || *params.LogStreamName == "" {
-				t.Fatal("you must supply a logGroupName and logStreamName")
+			// for error case
+			if *params.LogGroupName == "error" {
+				return nil, fmt.Errorf("error")
 			}
 			return &cloudwatchlogs.GetLogEventsOutput{
 				Events:            events,
@@ -117,16 +116,15 @@ func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing
 			}, nil
 		})
 	}
-	return mock
 }
 
 // return mock function for BatchgetBuilds
 func ReturnRetryBuildMockAPI(build types.Build) func(t *testing.T) CodeBuildAPI {
-	mock := func(t *testing.T) CodeBuildAPI {
+	return func(t *testing.T) CodeBuildAPI {
 		return RetryBuildMockAPI(func(ctx context.Context, params *codebuild.RetryBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.RetryBuildOutput, error) {
-			t.Helper()
-			if *params.Id == "" {
-				t.Fatal("Id must have at least one")
+			// for error case
+			if *params.Id == "error" {
+				return nil, fmt.Errorf("error")
 			}
 			return &codebuild.RetryBuildOutput{
 				Build:          &build,
@@ -134,5 +132,4 @@ func ReturnRetryBuildMockAPI(build types.Build) func(t *testing.T) CodeBuildAPI 
 			}, nil
 		})
 	}
-	return mock
 }

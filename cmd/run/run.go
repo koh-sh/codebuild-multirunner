@@ -24,7 +24,10 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc := common.ReadConfigFile(root.Configfile)
+		bc, err := common.ReadConfigFile(root.Configfile)
+		if err != nil {
+			log.Fatal(err)
+		}
 		client, err := common.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
@@ -32,7 +35,10 @@ var runCmd = &cobra.Command{
 		ids := []string{}
 		hasfailedbuild := false
 		for _, v := range bc.Builds {
-			startbuildinput := convertBuildConfigToStartBuildInput(v)
+			startbuildinput, err := convertBuildConfigToStartBuildInput(v)
+			if err != nil {
+				log.Fatal(err)
+			}
 			id, err := runCodeBuild(client, startbuildinput)
 			if err != nil {
 				log.Println(err)
@@ -52,7 +58,10 @@ var runCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed = common.BuildStatusCheck(client, ids)
+			ids, failed, err = common.BuildStatusCheck(client, ids)
+			if err != nil {
+				log.Fatal(err)
+			}
 			if failed {
 				hasfailedbuild = true
 			}
@@ -77,15 +86,15 @@ func runCodeBuild(client common.CodeBuildAPI, input codebuild.StartBuildInput) (
 	}
 	id := *result.Build.Id
 	log.Printf("%s [STARTED]\n", id)
-	return id, err
+	return id, nil
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
-func convertBuildConfigToStartBuildInput(build common.Build) codebuild.StartBuildInput {
+func convertBuildConfigToStartBuildInput(build common.Build) (codebuild.StartBuildInput, error) {
 	startbuildinput := codebuild.StartBuildInput{}
 	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {
-		log.Fatal(err)
+		return startbuildinput, err
 	}
-	return startbuildinput
+	return startbuildinput, nil
 }
