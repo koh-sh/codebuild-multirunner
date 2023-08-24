@@ -47,28 +47,28 @@ func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
 }
 
 // read yaml config file for builds definition
-func ReadConfigFile(filepath string) BuildConfig {
+func ReadConfigFile(filepath string) (BuildConfig, error) {
 	bc := BuildConfig{}
 	b, err := os.ReadFile(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return bc, err
 	}
 	expanded := os.ExpandEnv(string(b))
 	err = yaml.Unmarshal([]byte(expanded), &bc)
 	if err != nil {
-		log.Fatal(err)
+		return bc, err
 	}
-	return bc
+	return bc, nil
 }
 
 // check builds status and return ongoing build ids
-func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool) {
+func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
 	inprogressids := []string{}
 	hasfailedbuild := false
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
-		log.Fatal(err)
+		return nil, true, err
 	}
 	for _, v := range result.Builds {
 		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
@@ -78,7 +78,7 @@ func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool) {
 			hasfailedbuild = true
 		}
 	}
-	return inprogressids, hasfailedbuild
+	return inprogressids, hasfailedbuild, nil
 }
 
 // return colored string for each CodeBuild statuses

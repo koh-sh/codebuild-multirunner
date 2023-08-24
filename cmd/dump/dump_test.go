@@ -16,9 +16,10 @@ func Test_dumpConfig(t *testing.T) {
 		bc common.BuildConfig
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr bool
 	}{
 		{
 			name: "basic",
@@ -30,12 +31,18 @@ func Test_dumpConfig(t *testing.T) {
 					},
 				},
 			},
-			want: wantyaml,
+			want:    wantyaml,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := dumpConfig(tt.args.bc); got != tt.want {
+			got, err := dumpConfig(tt.args.bc)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("dumpConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
 				t.Errorf("dumpConfig() = %v, want %v", got, tt.want)
 			}
 		})

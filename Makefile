@@ -1,6 +1,6 @@
 .PHONY: setup test fmt cov tidy run lint
 
-COVFILE = cover.out
+COVFILE = coverage.out
 COVHTML = cover.html
 
 setup:

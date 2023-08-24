@@ -15,8 +15,15 @@ var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "dump config for running CodeBuild projects",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc := common.ReadConfigFile(root.Configfile)
-		fmt.Println(dumpConfig(bc))
+		bc, err := common.ReadConfigFile(root.Configfile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		conf, err := dumpConfig(bc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(conf)
 	},
 }
 
@@ -25,10 +32,10 @@ func init() {
 }
 
 // dump read config with environment variables inserted
-func dumpConfig(bc common.BuildConfig) string {
+func dumpConfig(bc common.BuildConfig) (string, error) {
 	d, err := yaml.Marshal(&bc)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return string(d)
+	return string(d), nil
 }

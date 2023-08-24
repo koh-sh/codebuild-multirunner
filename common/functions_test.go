@@ -13,9 +13,10 @@ func Test_readConfigFile(t *testing.T) {
 		filepath string
 	}
 	tests := []struct {
-		name string
-		args args
-		want BuildConfig
+		name    string
+		args    args
+		want    BuildConfig
+		wantErr bool
 	}{
 		{
 			name: "basic",
@@ -26,6 +27,7 @@ func Test_readConfigFile(t *testing.T) {
 					{ProjectName: "testproject2"},
 				},
 			},
+			wantErr: false,
 		},
 		{
 			name: "environment variable",
@@ -36,12 +38,30 @@ func Test_readConfigFile(t *testing.T) {
 					{ProjectName: "testproject2"},
 				},
 			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid yaml file",
+			args:    args{"testdata/_test3.yaml"},
+			want:    BuildConfig{},
+			wantErr: true,
+		},
+		{
+			name:    "file not found",
+			args:    args{"testdata/_testxxx.yaml"},
+			want:    BuildConfig{},
+			wantErr: true,
 		},
 	}
 	t.Setenv("TEST_ENV", "testproject3") // setting environment variable for test case 2
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReadConfigFile(tt.args.filepath); !reflect.DeepEqual(got, tt.want) {
+			got, err := ReadConfigFile(tt.args.filepath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("readConfigFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("readConfigFile() = %v, want %v", got, tt.want)
 			}
 		})
@@ -91,45 +111,62 @@ func Test_BuildStatusCheck(t *testing.T) {
 	id1 := "project:12345678"
 	id2 := "project2:87654321"
 	ids := []string{id1, id2}
+	errids := []string{"error"}
 
 	type args struct {
 		client func(t *testing.T) CodeBuildAPI
 		ids    []string
 	}
 	tests := []struct {
-		name  string
-		args  args
-		want  []string
-		want2 bool
+		name    string
+		args    args
+		want    []string
+		want2   bool
+		wantErr bool
 	}{
 		{
-			name:  "all builds ended",
-			args:  args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "SUCCEEDED", Id: &id2}}), ids: ids},
-			want:  []string{},
-			want2: false,
+			name:    "all builds ended",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "SUCCEEDED", Id: &id2}}), ids: ids},
+			want:    []string{},
+			want2:   false,
+			wantErr: false,
 		},
 		{
-			name:  "one builds in progress",
-			args:  args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "IN_PROGRESS", Id: &id2}}), ids: ids},
-			want:  []string{id2},
-			want2: false,
+			name:    "one builds in progress",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "IN_PROGRESS", Id: &id2}}), ids: ids},
+			want:    []string{id2},
+			want2:   false,
+			wantErr: false,
 		},
 		{
-			name:  "one of builds failed",
-			args:  args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "FAILED", Id: &id2}}), ids: ids},
-			want:  []string{},
-			want2: true,
+			name:    "one of builds failed",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "FAILED", Id: &id2}}), ids: ids},
+			want:    []string{},
+			want2:   true,
+			wantErr: false,
 		},
 		{
-			name:  "one of builds timeout",
-			args:  args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "TIMED_OUT", Id: &id2}}), ids: ids},
-			want:  []string{},
-			want2: true,
+			name:    "one of builds timeout",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "TIMED_OUT", Id: &id2}}), ids: ids},
+			want:    []string{},
+			want2:   true,
+			wantErr: false,
+		},
+		{
+			name:    "api error",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{}), ids: errids},
+			want:    nil,
+			want2:   true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got2 := BuildStatusCheck(tt.args.client(t), tt.args.ids)
+			got, got2, err := BuildStatusCheck(tt.args.client(t), tt.args.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("buildStatusCheck() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("buildStatusCheck() = %v, want %v", got, tt.want)
 			}

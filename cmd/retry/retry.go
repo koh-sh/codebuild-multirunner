@@ -45,7 +45,10 @@ var retryCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed = common.BuildStatusCheck(client, ids)
+			ids, failed, err = common.BuildStatusCheck(client, ids)
+			if err != nil {
+				log.Fatal(err)
+			}
 			if failed {
 				hasfailedbuild = true
 			}
