@@ -36,4 +36,4 @@ Makefile
 .goreleaser.yaml
 .octocov.yml
 cover.html
-config.yaml
+.codebuild-multirunner.yaml

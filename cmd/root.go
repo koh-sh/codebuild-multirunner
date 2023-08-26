@@ -28,7 +28,7 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&Configfile, "config", "./config.yaml", "file path for config file.")
+	RootCmd.PersistentFlags().StringVar(&Configfile, "config", "./.codebuild-multirunner.yaml", "file path for config file.")
 }
 
 // set version from goreleaser variables

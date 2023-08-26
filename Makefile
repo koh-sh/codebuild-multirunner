@@ -30,4 +30,4 @@ dockerbuild:
 	docker build . -t codebuild-multirunner:latest
 
 dockerrun:
-	docker run -it --rm -v ~/.aws:/root/.aws -v ~/config.yaml:/config.yaml codebuild-multirunner:latest -v
+	docker run -it --rm -v ~/.aws:/root/.aws -v ~/.codebuild-multirunner.yaml:/.codebuild-multirunner.yaml codebuild-multirunner:latest -v
