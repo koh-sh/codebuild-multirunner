@@ -152,3 +152,45 @@ You can retry a past build.
 2023/08/19 14:52:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [STARTED]
 2023/08/19 14:53:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [SUCCEEDED]
 ```
+
+## GitHub Actions
+
+You can use this in GitHub Actions workflow.
+
+```yaml
+name: Run Codebuild
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tag_push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-1
+    - name: run codebuild
+      uses: koh-sh/codebuild-multirunner@v0
+      with:
+        config: '.codebuild-multirunner.yaml'
+        polling-span: '60'
+```
+
+Definition of input is below.
+
+```yaml
+inputs:
+   config:
+     description: 'file path for config file. (default "./.codebuild-multirunner.yaml")'
+     required: false
+     default: '.codebuild-multirunner.yaml'
+   polling-span:
+     description: 'polling span in second for builds status check (default 60)'
+     required: false
+     default: '60'
+```

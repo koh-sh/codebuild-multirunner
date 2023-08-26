@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./codebuild-multirunner $@
+codebuild-multirunner $@
