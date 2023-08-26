@@ -1,4 +1,4 @@
-.PHONY: setup test fmt cov tidy run lint
+.PHONY: setup test fmt cov tidy run lint dockerbuild dockerrun
 
 COVFILE = coverage.out
 COVHTML = cover.html
@@ -24,3 +24,10 @@ tidy:
 
 lint:
 	golangci-lint run -v
+
+# for testing
+dockerbuild:
+	docker build . -t codebuild-multirunner:latest
+
+dockerrun:
+	docker run -it --rm -v ~/.aws:/root/.aws -v ~/config.yaml:/config.yaml codebuild-multirunner:latest -v
