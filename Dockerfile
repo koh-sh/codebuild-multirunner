@@ -15,7 +15,7 @@ FROM alpine:latest AS build-release-stage
 
 WORKDIR /
 
-COPY --from=build-stage /codebuild-multirunner /codebuild-multirunner
+COPY --from=build-stage /codebuild-multirunner /usr/local/bin/codebuild-multirunner
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
