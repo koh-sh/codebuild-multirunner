@@ -35,7 +35,7 @@ Available Commands:
   run         run CodeBuild projects based on YAML
 
 Flags:
-      --config string   file path for config file. (default "./config.yaml")
+      --config string   file path for config file. (default "./.codebuild-multirunner.yaml")
   -h, --help            help for codebuild-multirunner
   -v, --version         version for codebuild-multirunner
 
@@ -50,7 +50,7 @@ Create YAML based config file.
 change "testproject" to your CodeBuild Project name.
 
 ```bash
-% cat config.yaml
+% cat .codebuild-multirunner.yaml
 builds:
   - projectName: testproject
 ```
@@ -66,7 +66,7 @@ codebuild-multirunner run
 If you specify multiple projects, all projects will be running at once.
 
 ```bash
-% cat config.yaml
+% cat .codebuild-multirunner.yaml
 builds:
   - projectName: testproject
   - projectName: testproject2
@@ -76,7 +76,7 @@ builds:
 You can "Start build with overrides" by specifying parameters.
 
 ```bash
-% cat config.yaml
+% cat .codebuild-multirunner.yaml
 builds:
   - projectName: testproject
   - projectName: testproject2
@@ -119,7 +119,7 @@ builds:
 %
 ```
 
-Refer to [sample config file](config.yaml)
+Refer to [sample config file](.codebuild-multirunner.yaml)
 
 ### Get build log
 
