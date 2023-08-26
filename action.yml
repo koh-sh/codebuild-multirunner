@@ -13,5 +13,6 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - "run"
     - "--config ${{ inputs.config }}"
     - "--polling-span ${{ inputs.polling-span }}"
