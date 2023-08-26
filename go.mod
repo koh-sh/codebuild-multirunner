@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.35
-	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.23.4
+	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.23.5
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.21.5
 	github.com/aws/smithy-go v1.14.2
 	github.com/fatih/color v1.15.0
