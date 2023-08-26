@@ -10,3 +10,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
+    groups:
+      aws-sdk:
+        patterns:
+          - "github.com/aws/aws-sdk-go-v2*"
