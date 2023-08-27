@@ -7,6 +7,10 @@ on:
         type: string
         description: 'version tag (vx.x.x)'
         required: true
+
+permissions:
+  contents: write
+
 jobs:
   tag_push:
     runs-on: ubuntu-latest
