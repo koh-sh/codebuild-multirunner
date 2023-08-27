@@ -7,9 +7,6 @@ on:
         type: string
         description: 'version tag (vx.x.x)'
         required: true
-env:
-  GITHUB_TOKEN: ${{ secrets.PAT4TAG }}
-  
 jobs:
   tag_push:
     runs-on: ubuntu-latest
@@ -23,3 +20,19 @@ jobs:
           /repos/${{github.repository}}/git/refs \
           -f ref="refs/tags/${{inputs.tag}}" \
           -f sha="${{github.sha}}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT4TAG }}
+
+    - name: Push git tag v0
+      if: startsWith(inputs.tag, 'v0')
+      run: |
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/${{github.repository}}/git/refs \
+          -f ref="refs/tags/v0" \
+          -f sha="${{github.sha}}"
+      env:
+        # secrets.GITHUB_TOKEN will not trigger other workflows
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
