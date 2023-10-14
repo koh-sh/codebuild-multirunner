@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
 
 func Test_retryCodeBuild(t *testing.T) {
 	id1 := "project:12345678"
 	type args struct {
-		client func(t *testing.T) common.CodeBuildAPI
+		client func(t *testing.T) mr.CodeBuildAPI
 		id     string
 	}
 	tests := []struct {
@@ -21,13 +21,13 @@ func Test_retryCodeBuild(t *testing.T) {
 	}{
 		{
 			name:    "basic",
-			args:    args{client: common.ReturnRetryBuildMockAPI(types.Build{Id: &id1}), id: id1},
+			args:    args{client: mr.ReturnRetryBuildMockAPI(types.Build{Id: &id1}), id: id1},
 			want:    id1,
 			wantErr: false,
 		},
 		{
 			name:    "api error",
-			args:    args{client: common.ReturnRetryBuildMockAPI(types.Build{}), id: "error"},
+			args:    args{client: mr.ReturnRetryBuildMockAPI(types.Build{}), id: "error"},
 			want:    "",
 			wantErr: true,
 		},

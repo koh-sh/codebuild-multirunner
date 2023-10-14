@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/jinzhu/copier"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
 
@@ -24,11 +24,11 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := common.ReadConfigFile(root.Configfile)
+		bc, err := mr.ReadConfigFile(root.Configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := common.NewCodeBuildAPI()
+		client, err := mr.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -58,7 +58,7 @@ var runCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed, err = common.BuildStatusCheck(client, ids)
+			ids, failed, err = mr.BuildStatusCheck(client, ids)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -79,7 +79,7 @@ func init() {
 }
 
 // run CodeBuild Projects and return build id
-func runCodeBuild(client common.CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+func runCodeBuild(client mr.CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
 	result, err := client.StartBuild(context.TODO(), &input)
 	if err != nil {
 		return "", err
@@ -90,7 +90,7 @@ func runCodeBuild(client common.CodeBuildAPI, input codebuild.StartBuildInput) (
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
-func convertBuildConfigToStartBuildInput(build common.Build) (codebuild.StartBuildInput, error) {
+func convertBuildConfigToStartBuildInput(build mr.Build) (codebuild.StartBuildInput, error) {
 	startbuildinput := codebuild.StartBuildInput{}
 	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {

@@ -6,12 +6,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
 
 func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 	type args struct {
-		build common.Build
+		build mr.Build
 	}
 	tests := []struct {
 		name    string
@@ -21,7 +21,7 @@ func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 	}{
 		{
 			name:    "basic",
-			args:    args{common.Build{}},
+			args:    args{mr.Build{}},
 			want:    codebuild.StartBuildInput{},
 			wantErr: false,
 		},
@@ -45,7 +45,7 @@ func Test_runCodeBuild(t *testing.T) {
 	errproject := "error"
 	id := "project:12345"
 	type args struct {
-		client func(t *testing.T) common.CodeBuildAPI
+		client func(t *testing.T) mr.CodeBuildAPI
 		input  codebuild.StartBuildInput
 	}
 	tests := []struct {
@@ -56,13 +56,13 @@ func Test_runCodeBuild(t *testing.T) {
 	}{
 		{
 			name:    "success to start",
-			args:    args{client: common.ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &project}},
+			args:    args{client: mr.ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &project}},
 			want:    id,
 			wantErr: false,
 		},
 		{
 			name:    "api error",
-			args:    args{client: common.ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &errproject}},
+			args:    args{client: mr.ReturnStartBuildMockAPI(&types.Build{Id: &id}, nil), input: codebuild.StartBuildInput{ProjectName: &errproject}},
 			want:    "",
 			wantErr: true,
 		},

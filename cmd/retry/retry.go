@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var retryCmd = &cobra.Command{
 	Use:   "retry",
 	Short: "retry CodeBuild build with a provided id",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := common.NewCodeBuildAPI()
+		client, err := mr.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -45,7 +45,7 @@ var retryCmd = &cobra.Command{
 			}
 			time.Sleep(time.Duration(pollsec) * time.Second)
 			failed := false
-			ids, failed, err = common.BuildStatusCheck(client, ids)
+			ids, failed, err = mr.BuildStatusCheck(client, ids)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -68,7 +68,7 @@ func init() {
 }
 
 // retry CodeBuild build
-func retryCodeBuild(client common.CodeBuildAPI, id string) (string, error) {
+func retryCodeBuild(client mr.CodeBuildAPI, id string) (string, error) {
 	input := codebuild.RetryBuildInput{Id: &id}
 	result, err := client.RetryBuild(context.TODO(), &input)
 	if err != nil {

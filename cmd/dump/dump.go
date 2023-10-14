@@ -5,7 +5,7 @@ import (
 	"log"
 
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -15,7 +15,7 @@ var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "dump config for running CodeBuild projects",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := common.ReadConfigFile(root.Configfile)
+		bc, err := mr.ReadConfigFile(root.Configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -32,7 +32,7 @@ func init() {
 }
 
 // dump read config with environment variables inserted
-func dumpConfig(bc common.BuildConfig) (string, error) {
+func dumpConfig(bc mr.BuildConfig) (string, error) {
 	d, err := yaml.Marshal(&bc)
 	if err != nil {
 		return "", err

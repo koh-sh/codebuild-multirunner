@@ -4,7 +4,7 @@
 
 This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
 
-![Img](misc/ss.png)
+![Img](_misc/ss.png)
 
 ## Installation
 

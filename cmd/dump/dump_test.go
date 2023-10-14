@@ -3,7 +3,7 @@ package dump
 import (
 	"testing"
 
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
 
 func Test_dumpConfig(t *testing.T) {
@@ -13,7 +13,7 @@ func Test_dumpConfig(t *testing.T) {
     - projectName: testproject2
 `
 	type args struct {
-		bc common.BuildConfig
+		bc mr.BuildConfig
 	}
 	tests := []struct {
 		name    string
@@ -24,8 +24,8 @@ func Test_dumpConfig(t *testing.T) {
 		{
 			name: "basic",
 			args: args{
-				common.BuildConfig{
-					Builds: []common.Build{
+				mr.BuildConfig{
+					Builds: []mr.Build{
 						{ProjectName: "testproject", SourceVersion: "chore/test"},
 						{ProjectName: "testproject2"},
 					},
