@@ -1,4 +1,4 @@
-package common
+package multirunner
 
 //
 // types for CodeBuild parameter override. defined to use yaml tags

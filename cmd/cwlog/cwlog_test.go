@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	cwltypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
-	"github.com/koh-sh/codebuild-multirunner/common"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
 
 func Test_getCloudWatchLogSetting(t *testing.T) {
@@ -15,7 +15,7 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 	group := "/aws/codebuild/project"
 	stream := "12345678"
 	type args struct {
-		client func(t *testing.T) common.CodeBuildAPI
+		client func(t *testing.T) mr.CodeBuildAPI
 		id     string
 	}
 	tests := []struct {
@@ -27,7 +27,7 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 	}{
 		{
 			name: "enabled",
-			args: args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{
+			args: args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{
 				{
 					Logs: &types.LogsLocation{
 						CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "ENABLED"},
@@ -42,7 +42,7 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 		},
 		{
 			name: "disabled",
-			args: args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{
+			args: args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{
 				{
 					Logs: &types.LogsLocation{
 						CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "DISABLED"},
@@ -57,14 +57,14 @@ func Test_getCloudWatchLogSetting(t *testing.T) {
 		},
 		{
 			name:    "not found",
-			args:    args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: id},
+			args:    args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: id},
 			want:    "",
 			want1:   "",
 			wantErr: true,
 		},
 		{
 			name:    "api error",
-			args:    args{client: common.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: "error"},
+			args:    args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: "error"},
 			want:    "",
 			want1:   "",
 			wantErr: true,
@@ -107,7 +107,7 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 		},
 	}
 	type args struct {
-		client func(t *testing.T) common.CWLGetLogEventsAPI
+		client func(t *testing.T) mr.CWLGetLogEventsAPI
 		group  string
 		stream string
 		token  string
@@ -120,7 +120,7 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 	}{
 		{
 			name: "success",
-			args: args{client: common.ReturnGetLogEventsMockAPI(wantOutput), group: "/aws/codebuild/project", stream: "12345678", token: ""},
+			args: args{client: mr.ReturnGetLogEventsMockAPI(wantOutput), group: "/aws/codebuild/project", stream: "12345678", token: ""},
 			want: cloudwatchlogs.GetLogEventsOutput{
 				Events:            wantOutput,
 				NextBackwardToken: nil,
@@ -130,7 +130,7 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 		},
 		{
 			name: "success with token",
-			args: args{client: common.ReturnGetLogEventsMockAPI(wantOutput), group: "/aws/codebuild/project", stream: "12345678", token: "12345"},
+			args: args{client: mr.ReturnGetLogEventsMockAPI(wantOutput), group: "/aws/codebuild/project", stream: "12345678", token: "12345"},
 			want: cloudwatchlogs.GetLogEventsOutput{
 				Events:            wantOutput,
 				NextBackwardToken: nil,
@@ -140,13 +140,13 @@ func Test_getCloudWatchLogEvents(t *testing.T) {
 		},
 		{
 			name:    "empty group or stream",
-			args:    args{client: common.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "", stream: "", token: ""},
+			args:    args{client: mr.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "", stream: "", token: ""},
 			want:    cloudwatchlogs.GetLogEventsOutput{},
 			wantErr: true,
 		},
 		{
 			name:    "api error",
-			args:    args{client: common.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "error", stream: "error", token: ""},
+			args:    args{client: mr.ReturnGetLogEventsMockAPI([]cwltypes.OutputLogEvent{}), group: "error", stream: "error", token: ""},
 			want:    cloudwatchlogs.GetLogEventsOutput{},
 			wantErr: true,
 		},
