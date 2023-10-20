@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/aws/aws-sdk-go-v2/config v1.18.45
+	github.com/aws/aws-sdk-go-v2/config v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.24.2
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.22.2
 	github.com/aws/smithy-go v1.15.0
