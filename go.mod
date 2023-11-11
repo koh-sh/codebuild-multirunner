@@ -11,7 +11,7 @@ require (
 	github.com/aws/smithy-go v1.16.0
 	github.com/fatih/color v1.15.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
