@@ -1,4 +1,4 @@
-package codebuild
+package cb
 
 import (
 	"context"

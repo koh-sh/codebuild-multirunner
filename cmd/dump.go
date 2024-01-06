@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
+	"github.com/koh-sh/codebuild-multirunner/internal/cb"
 	"github.com/spf13/cobra"
 )
 
