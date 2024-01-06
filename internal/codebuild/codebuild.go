@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
@@ -30,7 +31,7 @@ func NewCodeBuildAPI() (CodeBuildAPI, error) {
 }
 
 // check builds status and return ongoing build ids
-func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
+func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
 	inprogressids := []string{}
 	hasfailedbuild := false
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
@@ -119,5 +120,26 @@ func coloredString(status string) string {
 		return color.BlueString(status)
 	default:
 		return color.RedString(status)
+	}
+}
+
+// wait and check status of builds and return if any build failed
+func WaitAndCheckBuildStatus(client CodeBuildAPI, ids []string, pollsec int) (bool, error) {
+	var err error
+	failed := false
+	hasfailed := false
+	for {
+		// break if all builds end
+		if len(ids) == 0 {
+			return hasfailed, nil
+		}
+		time.Sleep(time.Duration(pollsec) * time.Second)
+		ids, failed, err = buildStatusCheck(client, ids)
+		if err != nil {
+			return false, err
+		}
+		if failed {
+			hasfailed = true
+		}
 	}
 }

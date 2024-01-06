@@ -109,7 +109,7 @@ func ReturnRetryBuildMockAPI(build types.Build) func(t *testing.T) CodeBuildAPI 
 	}
 }
 
-func Test_BuildStatusCheck(t *testing.T) {
+func Test_buildStatusCheck(t *testing.T) {
 	id1 := "project:12345678"
 	id2 := "project2:87654321"
 	ids := []string{id1, id2}
@@ -164,7 +164,7 @@ func Test_BuildStatusCheck(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got2, err := BuildStatusCheck(tt.args.client(t), tt.args.ids)
+			got, got2, err := buildStatusCheck(tt.args.client(t), tt.args.ids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("buildStatusCheck() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -420,6 +420,61 @@ func Test_ConvertBuildConfigToStartBuildInput(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("convertBuildConfigToStartBuildInput() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWaitAndCheckBuildStatus(t *testing.T) {
+	id1 := "project:12345678"
+	id2 := "project2:87654321"
+	ids := []string{id1, id2}
+	errids := []string{"error"}
+	type args struct {
+		client  func(t *testing.T) CodeBuildAPI
+		ids     []string
+		pollsec int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "all build successed",
+			args: args{
+				client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "SUCCEEDED", Id: &id2}}),
+				ids:    ids, pollsec: 0,
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name: "one of builds failed",
+			args: args{
+				client: ReturnBatchGetBuildsMockAPI([]types.Build{{BuildStatus: "SUCCEEDED", Id: &id1}, {BuildStatus: "FAILED", Id: &id2}}),
+				ids:    ids, pollsec: 0,
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:    "api error",
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{}), ids: errids, pollsec: 0},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := WaitAndCheckBuildStatus(tt.args.client(t), tt.args.ids, tt.args.pollsec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("WaitAndCheckBuildStatus() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("WaitAndCheckBuildStatus() = %v, want %v", got, tt.want)
 			}
 		})
 	}
