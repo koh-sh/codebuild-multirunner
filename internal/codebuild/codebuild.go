@@ -1,31 +1,19 @@
-package multirunner
+package codebuild
 
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
-	"github.com/fatih/color"
-	"gopkg.in/yaml.v3"
+	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
-
-//
-// types and functions shared within subcommands
-//
 
 // interface for AWS CodeBuild API
 type CodeBuildAPI interface {
 	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
 	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
 	RetryBuild(ctx context.Context, params *codebuild.RetryBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.RetryBuildOutput, error)
-}
-
-// interface for AWS CloudWatch Logs API
-type CWLGetLogEventsAPI interface {
-	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
 }
 
 // return CodeBuild api client
@@ -35,30 +23,6 @@ func NewCodeBuildAPI() (CodeBuildAPI, error) {
 		return nil, err
 	}
 	return codebuild.NewFromConfig(cfg), nil
-}
-
-// return CloudWatchLogs api client
-func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return cloudwatchlogs.NewFromConfig(cfg), nil
-}
-
-// read yaml config file for builds definition
-func ReadConfigFile(filepath string) (BuildConfig, error) {
-	bc := BuildConfig{}
-	b, err := os.ReadFile(filepath)
-	if err != nil {
-		return bc, err
-	}
-	expanded := os.ExpandEnv(string(b))
-	err = yaml.Unmarshal([]byte(expanded), &bc)
-	if err != nil {
-		return bc, err
-	}
-	return bc, nil
 }
 
 // check builds status and return ongoing build ids
@@ -71,7 +35,7 @@ func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error)
 		return nil, true, err
 	}
 	for _, v := range result.Builds {
-		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
+		log.Printf("%s [%s]\n", *v.Id, mr.ColoredString(string(v.BuildStatus)))
 		if v.BuildStatus == "IN_PROGRESS" {
 			inprogressids = append(inprogressids, *v.Id)
 		} else if v.BuildStatus != "SUCCEEDED" {
@@ -81,14 +45,25 @@ func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error)
 	return inprogressids, hasfailedbuild, nil
 }
 
-// return colored string for each CodeBuild statuses
-func coloredString(status string) string {
-	switch status {
-	case "SUCCEEDED":
-		return color.GreenString(status)
-	case "IN_PROGRESS":
-		return color.BlueString(status)
-	default:
-		return color.RedString(status)
+// run CodeBuild Projects and return build id
+func RunCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
+	result, err := client.StartBuild(context.TODO(), &input)
+	if err != nil {
+		return "", err
 	}
+	id := *result.Build.Id
+	log.Printf("%s [STARTED]\n", id)
+	return id, nil
+}
+
+// retry CodeBuild build
+func RetryCodeBuild(client CodeBuildAPI, id string) (string, error) {
+	input := codebuild.RetryBuildInput{Id: &id}
+	result, err := client.RetryBuild(context.TODO(), &input)
+	if err != nil {
+		return "", err
+	}
+	buildid := *result.Build.Id
+	log.Printf("%s [STARTED]\n", buildid)
+	return buildid, err
 }

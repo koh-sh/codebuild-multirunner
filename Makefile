@@ -7,6 +7,7 @@ setup:
 	go install github.com/mfridman/tparse@latest
 	go install mvdan.cc/gofumpt@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/spf13/cobra-cli@latest
 
 test:
 	go test ./... -json | tparse -all
