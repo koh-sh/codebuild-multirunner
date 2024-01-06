@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
 	"github.com/fatih/color"
+	cmt "github.com/koh-sh/codebuild-multirunner/internal/types"
 )
 
 func Test_readConfigFile(t *testing.T) {
@@ -15,14 +16,14 @@ func Test_readConfigFile(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    BuildConfig
+		want    cmt.BuildConfig
 		wantErr bool
 	}{
 		{
 			name: "basic",
 			args: args{"testdata/_test.yaml"},
-			want: BuildConfig{
-				[]Build{
+			want: cmt.BuildConfig{
+				Builds: []cmt.Build{
 					{ProjectName: "testproject", SourceVersion: "chore/test"},
 					{ProjectName: "testproject2"},
 				},
@@ -32,8 +33,8 @@ func Test_readConfigFile(t *testing.T) {
 		{
 			name: "environment variable",
 			args: args{"testdata/_test2.yaml"},
-			want: BuildConfig{
-				[]Build{
+			want: cmt.BuildConfig{
+				Builds: []cmt.Build{
 					{ProjectName: "testproject3", SourceVersion: "chore/test"},
 					{ProjectName: "testproject2"},
 				},
@@ -43,13 +44,13 @@ func Test_readConfigFile(t *testing.T) {
 		{
 			name:    "invalid yaml file",
 			args:    args{"testdata/_test3.yaml"},
-			want:    BuildConfig{},
+			want:    cmt.BuildConfig{},
 			wantErr: true,
 		},
 		{
 			name:    "file not found",
 			args:    args{"testdata/_testxxx.yaml"},
-			want:    BuildConfig{},
+			want:    cmt.BuildConfig{},
 			wantErr: true,
 		},
 	}

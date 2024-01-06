@@ -7,11 +7,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	cmt "github.com/koh-sh/codebuild-multirunner/internal/types"
 )
 
 func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 	type args struct {
-		build mr.Build
+		build cmt.Build
 	}
 	tests := []struct {
 		name    string
@@ -21,7 +22,7 @@ func Test_convertBuildConfigToStartBuildInput(t *testing.T) {
 	}{
 		{
 			name:    "basic",
-			args:    args{mr.Build{}},
+			args:    args{cmt.Build{}},
 			want:    codebuild.StartBuildInput{},
 			wantErr: false,
 		},

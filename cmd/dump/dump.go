@@ -6,6 +6,7 @@ import (
 
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	"github.com/koh-sh/codebuild-multirunner/internal/types"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -32,7 +33,7 @@ func init() {
 }
 
 // dump read config with environment variables inserted
-func dumpConfig(bc mr.BuildConfig) (string, error) {
+func dumpConfig(bc types.BuildConfig) (string, error) {
 	d, err := yaml.Marshal(&bc)
 	if err != nil {
 		return "", err

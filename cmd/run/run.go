@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/copier"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	"github.com/koh-sh/codebuild-multirunner/internal/types"
 	"github.com/spf13/cobra"
 )
 
@@ -90,7 +91,7 @@ func runCodeBuild(client mr.CodeBuildAPI, input codebuild.StartBuildInput) (stri
 }
 
 // copy configration read from yaml to codebuild.StartBuildInput
-func convertBuildConfigToStartBuildInput(build mr.Build) (codebuild.StartBuildInput, error) {
+func convertBuildConfigToStartBuildInput(build types.Build) (codebuild.StartBuildInput, error) {
 	startbuildinput := codebuild.StartBuildInput{}
 	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
+	"github.com/koh-sh/codebuild-multirunner/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
@@ -47,8 +48,8 @@ func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
 }
 
 // read yaml config file for builds definition
-func ReadConfigFile(filepath string) (BuildConfig, error) {
-	bc := BuildConfig{}
+func ReadConfigFile(filepath string) (types.BuildConfig, error) {
+	bc := types.BuildConfig{}
 	b, err := os.ReadFile(filepath)
 	if err != nil {
 		return bc, err
