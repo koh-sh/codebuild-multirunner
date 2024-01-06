@@ -1,17 +1,13 @@
-package cwlog
+package cmd
 
 import (
 	"fmt"
 	"log"
 
-	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 	"github.com/koh-sh/codebuild-multirunner/internal/cwlog"
 	"github.com/spf13/cobra"
 )
-
-// options
-var id string
 
 // logCmd represents the log command
 var logCmd = &cobra.Command{
@@ -58,7 +54,7 @@ S3 Log is not supported`,
 }
 
 func init() {
-	root.RootCmd.AddCommand(logCmd)
+	rootCmd.AddCommand(logCmd)
 	logCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for getting log")
 	logCmd.MarkFlagRequired("id")
 }

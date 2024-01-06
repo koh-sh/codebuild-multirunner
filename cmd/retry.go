@@ -5,16 +5,8 @@ import (
 	"os"
 	"time"
 
-	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 	"github.com/spf13/cobra"
-)
-
-// options
-var (
-	id      string
-	nowait  bool
-	pollsec int
 )
 
 // retryCmd represents the retry command
@@ -58,7 +50,7 @@ var retryCmd = &cobra.Command{
 }
 
 func init() {
-	root.RootCmd.AddCommand(retryCmd)
+	rootCmd.AddCommand(retryCmd)
 	retryCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	retryCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
 	retryCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for retry")

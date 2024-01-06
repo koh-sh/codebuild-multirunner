@@ -5,16 +5,9 @@ import (
 	"os"
 	"time"
 
-	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
-)
-
-// options
-var (
-	nowait  bool
-	pollsec int
 )
 
 // runCmd represents the run command
@@ -22,7 +15,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := mr.ReadConfigFile(root.Configfile)
+		bc, err := mr.ReadConfigFile(configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,7 +64,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	root.RootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVar(&nowait, "no-wait", false, "specify if you don't need to follow builds status")
 	runCmd.Flags().IntVar(&pollsec, "polling-span", 60, "polling span in second for builds status check")
 }

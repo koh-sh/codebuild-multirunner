@@ -2,10 +2,6 @@ package main
 
 import (
 	"github.com/koh-sh/codebuild-multirunner/cmd"
-	_ "github.com/koh-sh/codebuild-multirunner/cmd/cwlog"
-	_ "github.com/koh-sh/codebuild-multirunner/cmd/dump"
-	_ "github.com/koh-sh/codebuild-multirunner/cmd/retry"
-	_ "github.com/koh-sh/codebuild-multirunner/cmd/run"
 )
 
 var (

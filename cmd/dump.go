@@ -1,10 +1,9 @@
-package dump
+package cmd
 
 import (
 	"fmt"
 	"log"
 
-	root "github.com/koh-sh/codebuild-multirunner/cmd"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +13,7 @@ var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "dump config for running CodeBuild projects",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := mr.ReadConfigFile(root.Configfile)
+		bc, err := mr.ReadConfigFile(configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -27,5 +26,5 @@ var dumpCmd = &cobra.Command{
 }
 
 func init() {
-	root.RootCmd.AddCommand(dumpCmd)
+	rootCmd.AddCommand(dumpCmd)
 }
