@@ -6,7 +6,6 @@ import (
 	"time"
 
 	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
-	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +14,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := mr.ReadConfigFile(configfile)
+		bc, err := cb.ReadConfigFile(configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -26,7 +25,7 @@ var runCmd = &cobra.Command{
 		ids := []string{}
 		hasfailedbuild := false
 		for _, v := range bc.Builds {
-			startbuildinput, err := mr.ConvertBuildConfigToStartBuildInput(v)
+			startbuildinput, err := cb.ConvertBuildConfigToStartBuildInput(v)
 			if err != nil {
 				log.Fatal(err)
 			}
