@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
 	"github.com/aws/smithy-go/middleware"
-	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
+	"github.com/koh-sh/codebuild-multirunner/internal/cb"
 )
 
 // mock api for GetLogEvents

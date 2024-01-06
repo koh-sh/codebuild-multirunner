@@ -3,10 +3,8 @@ package cmd
 import (
 	"log"
 	"os"
-	"time"
 
-	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
-	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	"github.com/koh-sh/codebuild-multirunner/internal/cb"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +13,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run CodeBuild projects based on YAML",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := mr.ReadConfigFile(configfile)
+		bc, err := cb.ReadConfigFile(configfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -23,17 +21,18 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		// run specified codebuild projects
 		ids := []string{}
-		hasfailedbuild := false
+		runfailed := false
 		for _, v := range bc.Builds {
-			startbuildinput, err := mr.ConvertBuildConfigToStartBuildInput(v)
+			input, err := cb.ConvertBuildConfigToStartBuildInput(v)
 			if err != nil {
 				log.Fatal(err)
 			}
-			id, err := cb.RunCodeBuild(client, startbuildinput)
+			id, err := cb.RunCodeBuild(client, input)
 			if err != nil {
 				log.Println(err)
-				hasfailedbuild = true
+				runfailed = true
 			} else {
 				ids = append(ids, id)
 			}
@@ -42,22 +41,13 @@ var runCmd = &cobra.Command{
 		if nowait {
 			return
 		}
-		for i := 0; ; i++ {
-			// break if all builds end
-			if len(ids) == 0 {
-				break
-			}
-			time.Sleep(time.Duration(pollsec) * time.Second)
-			failed := false
-			ids, failed, err = cb.BuildStatusCheck(client, ids)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if failed {
-				hasfailedbuild = true
-			}
+		// check build status
+		failed := false
+		failed, err = cb.WaitAndCheckBuildStatus(client, ids, pollsec)
+		if err != nil {
+			log.Fatal(err)
 		}
-		if hasfailedbuild {
+		if runfailed || failed {
 			os.Exit(2)
 		}
 	},

@@ -29,6 +29,7 @@
 **/values.dev.yaml
 **/.github
 **/_misc
+**/_testscripts
 LICENSE
 README.md
 Makefile

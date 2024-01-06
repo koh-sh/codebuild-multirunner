@@ -3,9 +3,8 @@ package cmd
 import (
 	"log"
 	"os"
-	"time"
 
-	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
+	"github.com/koh-sh/codebuild-multirunner/internal/cb"
 	"github.com/spf13/cobra"
 )
 
@@ -22,28 +21,17 @@ var retryCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		ids := []string{buildid}
-		hasfailedbuild := false
 		// early return if --no-wait option set
 		if nowait {
 			return
 		}
-		for i := 0; ; i++ {
-			// break if all builds end
-			if len(ids) == 0 {
-				break
-			}
-			time.Sleep(time.Duration(pollsec) * time.Second)
-			failed := false
-			ids, failed, err = cb.BuildStatusCheck(client, ids)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if failed {
-				hasfailedbuild = true
-			}
+		// check build status
+		failed := false
+		failed, err = cb.WaitAndCheckBuildStatus(client, []string{buildid}, pollsec)
+		if err != nil {
+			log.Fatal(err)
 		}
-		if hasfailedbuild {
+		if failed {
 			os.Exit(2)
 		}
 	},

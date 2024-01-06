@@ -1,0 +1,8 @@
+builds:
+  - projectName: testproject
+#  - projectName: testproject3
+#    environmentVariablesOverride:
+#    - name: ${HOGE}
+#      value: ${FUGA}
+#      type: PLAINTEXT
+  - projectName: testproject2
