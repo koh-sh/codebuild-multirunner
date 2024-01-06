@@ -8,8 +8,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	cwltypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
-	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	"github.com/aws/smithy-go/middleware"
+	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 )
 
 // mock api for GetLogEvents
@@ -37,12 +39,45 @@ func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing
 	}
 }
 
+// mock api for BatchGetBuilds
+type BatchGetBuildsMockAPI func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
+
+func (m BatchGetBuildsMockAPI) StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error) {
+	return nil, nil
+}
+
+func (m BatchGetBuildsMockAPI) BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
+	return m(ctx, params, optFns...)
+}
+
+func (m BatchGetBuildsMockAPI) RetryBuild(ctx context.Context, params *codebuild.RetryBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.RetryBuildOutput, error) {
+	return nil, nil
+}
+
+// return mock function for BatchgetBuilds
+func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) cb.CodeBuildAPI {
+	return func(t *testing.T) cb.CodeBuildAPI {
+		return BatchGetBuildsMockAPI(func(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error) {
+			t.Helper()
+			// for error case
+			if params.Ids[0] == "error" {
+				return nil, fmt.Errorf("error")
+			}
+			return &codebuild.BatchGetBuildsOutput{
+				Builds:         builds,
+				BuildsNotFound: []string{},
+				ResultMetadata: middleware.Metadata{},
+			}, nil
+		})
+	}
+}
+
 func Test_GetCloudWatchLogSetting(t *testing.T) {
 	id := "project:12345678"
 	group := "/aws/codebuild/project"
 	stream := "12345678"
 	type args struct {
-		client func(t *testing.T) mr.CodeBuildAPI
+		client func(t *testing.T) cb.CodeBuildAPI
 		id     string
 	}
 	tests := []struct {
@@ -54,7 +89,7 @@ func Test_GetCloudWatchLogSetting(t *testing.T) {
 	}{
 		{
 			name: "enabled",
-			args: args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{
+			args: args{client: ReturnBatchGetBuildsMockAPI([]types.Build{
 				{
 					Logs: &types.LogsLocation{
 						CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "ENABLED"},
@@ -69,7 +104,7 @@ func Test_GetCloudWatchLogSetting(t *testing.T) {
 		},
 		{
 			name: "disabled",
-			args: args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{
+			args: args{client: ReturnBatchGetBuildsMockAPI([]types.Build{
 				{
 					Logs: &types.LogsLocation{
 						CloudWatchLogs: &types.CloudWatchLogsConfig{Status: "DISABLED"},
@@ -84,14 +119,14 @@ func Test_GetCloudWatchLogSetting(t *testing.T) {
 		},
 		{
 			name:    "not found",
-			args:    args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: id},
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{}), id: id},
 			want:    "",
 			want1:   "",
 			wantErr: true,
 		},
 		{
 			name:    "api error",
-			args:    args{client: mr.ReturnBatchGetBuildsMockAPI([]types.Build{}), id: "error"},
+			args:    args{client: ReturnBatchGetBuildsMockAPI([]types.Build{}), id: "error"},
 			want:    "",
 			want1:   "",
 			wantErr: true,

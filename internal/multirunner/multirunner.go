@@ -1,36 +1,14 @@
 package multirunner
 
 import (
-	"context"
-	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
+	"github.com/jinzhu/copier"
 	"github.com/koh-sh/codebuild-multirunner/internal/types"
 	"gopkg.in/yaml.v3"
 )
-
-//
-// types and functions shared within subcommands
-//
-
-// interface for AWS CodeBuild API
-type CodeBuildAPI interface {
-	BatchGetBuilds(ctx context.Context, params *codebuild.BatchGetBuildsInput, optFns ...func(*codebuild.Options)) (*codebuild.BatchGetBuildsOutput, error)
-	StartBuild(ctx context.Context, params *codebuild.StartBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.StartBuildOutput, error)
-	RetryBuild(ctx context.Context, params *codebuild.RetryBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.RetryBuildOutput, error)
-}
-
-// return CodeBuild api client
-func NewCodeBuildAPI() (CodeBuildAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return codebuild.NewFromConfig(cfg), nil
-}
 
 // read yaml config file for builds definition
 func ReadConfigFile(filepath string) (types.BuildConfig, error) {
@@ -47,28 +25,8 @@ func ReadConfigFile(filepath string) (types.BuildConfig, error) {
 	return bc, nil
 }
 
-// check builds status and return ongoing build ids
-func BuildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
-	inprogressids := []string{}
-	hasfailedbuild := false
-	input := codebuild.BatchGetBuildsInput{Ids: ids}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
-	if err != nil {
-		return nil, true, err
-	}
-	for _, v := range result.Builds {
-		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
-		if v.BuildStatus == "IN_PROGRESS" {
-			inprogressids = append(inprogressids, *v.Id)
-		} else if v.BuildStatus != "SUCCEEDED" {
-			hasfailedbuild = true
-		}
-	}
-	return inprogressids, hasfailedbuild, nil
-}
-
 // return colored string for each CodeBuild statuses
-func coloredString(status string) string {
+func ColoredString(status string) string {
 	switch status {
 	case "SUCCEEDED":
 		return color.GreenString(status)
@@ -86,4 +44,14 @@ func DumpConfig(bc types.BuildConfig) (string, error) {
 		return "", err
 	}
 	return string(d), nil
+}
+
+// copy configration read from yaml to codebuild.StartBuildInput
+func ConvertBuildConfigToStartBuildInput(build types.Build) (codebuild.StartBuildInput, error) {
+	startbuildinput := codebuild.StartBuildInput{}
+	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		return startbuildinput, err
+	}
+	return startbuildinput, nil
 }

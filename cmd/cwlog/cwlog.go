@@ -5,8 +5,8 @@ import (
 	"log"
 
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
+	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 	"github.com/koh-sh/codebuild-multirunner/internal/cwlog"
-	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ Only CloudWatch Logs is supported.
 S3 Log is not supported`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		cbclient, err := mr.NewCodeBuildAPI()
+		cbclient, err := cb.NewCodeBuildAPI()
 		if err != nil {
 			log.Fatal(err)
 		}

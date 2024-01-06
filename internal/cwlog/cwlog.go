@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
-	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
+	cb "github.com/koh-sh/codebuild-multirunner/internal/codebuild"
 )
 
 // interface for AWS CloudWatch Logs API
@@ -26,7 +26,7 @@ func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
 }
 
 // get CloudWatch Log settings from a build and return logGroupName, logStreamName and error
-func GetCloudWatchLogSetting(client mr.CodeBuildAPI, id string) (string, string, error) {
+func GetCloudWatchLogSetting(client cb.CodeBuildAPI, id string) (string, string, error) {
 	input := codebuild.BatchGetBuildsInput{Ids: []string{id}}
 	result, err := client.BatchGetBuilds(context.TODO(), &input)
 	if err != nil {
