@@ -21,13 +21,13 @@ var retryCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		ids := []string{buildid}
-		failed := false
 		// early return if --no-wait option set
 		if nowait {
 			return
 		}
-		failed, err = cb.WaitAndCheckBuildStatus(client, ids, pollsec)
+		// check build status
+		failed := false
+		failed, err = cb.WaitAndCheckBuildStatus(client, []string{buildid}, pollsec)
 		if err != nil {
 			log.Fatal(err)
 		}

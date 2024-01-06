@@ -21,15 +21,15 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		// run specified codebuild projects
 		ids := []string{}
 		runfailed := false
-		failed := false
 		for _, v := range bc.Builds {
-			startbuildinput, err := cb.ConvertBuildConfigToStartBuildInput(v)
+			input, err := cb.ConvertBuildConfigToStartBuildInput(v)
 			if err != nil {
 				log.Fatal(err)
 			}
-			id, err := cb.RunCodeBuild(client, startbuildinput)
+			id, err := cb.RunCodeBuild(client, input)
 			if err != nil {
 				log.Println(err)
 				runfailed = true
@@ -41,6 +41,8 @@ var runCmd = &cobra.Command{
 		if nowait {
 			return
 		}
+		// check build status
+		failed := false
 		failed, err = cb.WaitAndCheckBuildStatus(client, ids, pollsec)
 		if err != nil {
 			log.Fatal(err)

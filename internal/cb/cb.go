@@ -30,26 +30,6 @@ func NewCodeBuildAPI() (CodeBuildAPI, error) {
 	return codebuild.NewFromConfig(cfg), nil
 }
 
-// check builds status and return ongoing build ids
-func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
-	inprogressids := []string{}
-	hasfailedbuild := false
-	input := codebuild.BatchGetBuildsInput{Ids: ids}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
-	if err != nil {
-		return nil, true, err
-	}
-	for _, v := range result.Builds {
-		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
-		if v.BuildStatus == "IN_PROGRESS" {
-			inprogressids = append(inprogressids, *v.Id)
-		} else if v.BuildStatus != "SUCCEEDED" {
-			hasfailedbuild = true
-		}
-	}
-	return inprogressids, hasfailedbuild, nil
-}
-
 // run CodeBuild Projects and return build id
 func RunCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
 	result, err := client.StartBuild(context.TODO(), &input)
@@ -111,18 +91,6 @@ func ConvertBuildConfigToStartBuildInput(build types.Build) (codebuild.StartBuil
 	return startbuildinput, nil
 }
 
-// return colored string for each CodeBuild statuses
-func coloredString(status string) string {
-	switch status {
-	case "SUCCEEDED":
-		return color.GreenString(status)
-	case "IN_PROGRESS":
-		return color.BlueString(status)
-	default:
-		return color.RedString(status)
-	}
-}
-
 // wait and check status of builds and return if any build failed
 func WaitAndCheckBuildStatus(client CodeBuildAPI, ids []string, pollsec int) (bool, error) {
 	var err error
@@ -141,5 +109,37 @@ func WaitAndCheckBuildStatus(client CodeBuildAPI, ids []string, pollsec int) (bo
 		if failed {
 			hasfailed = true
 		}
+	}
+}
+
+// check builds status and return ongoing build ids
+func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error) {
+	inprogressids := []string{}
+	hasfailedbuild := false
+	input := codebuild.BatchGetBuildsInput{Ids: ids}
+	result, err := client.BatchGetBuilds(context.TODO(), &input)
+	if err != nil {
+		return nil, true, err
+	}
+	for _, v := range result.Builds {
+		log.Printf("%s [%s]\n", *v.Id, coloredString(string(v.BuildStatus)))
+		if v.BuildStatus == "IN_PROGRESS" {
+			inprogressids = append(inprogressids, *v.Id)
+		} else if v.BuildStatus != "SUCCEEDED" {
+			hasfailedbuild = true
+		}
+	}
+	return inprogressids, hasfailedbuild, nil
+}
+
+// return colored string for each CodeBuild statuses
+func coloredString(status string) string {
+	switch status {
+	case "SUCCEEDED":
+		return color.GreenString(status)
+	case "IN_PROGRESS":
+		return color.BlueString(status)
+	default:
+		return color.RedString(status)
 	}
 }
