@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
 	"github.com/koh-sh/codebuild-multirunner/internal/types"
@@ -24,11 +23,6 @@ type CodeBuildAPI interface {
 	RetryBuild(ctx context.Context, params *codebuild.RetryBuildInput, optFns ...func(*codebuild.Options)) (*codebuild.RetryBuildOutput, error)
 }
 
-// interface for AWS CloudWatch Logs API
-type CWLGetLogEventsAPI interface {
-	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
-}
-
 // return CodeBuild api client
 func NewCodeBuildAPI() (CodeBuildAPI, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
@@ -36,15 +30,6 @@ func NewCodeBuildAPI() (CodeBuildAPI, error) {
 		return nil, err
 	}
 	return codebuild.NewFromConfig(cfg), nil
-}
-
-// return CloudWatchLogs api client
-func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return cloudwatchlogs.NewFromConfig(cfg), nil
 }
 
 // read yaml config file for builds definition

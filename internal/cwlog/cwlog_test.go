@@ -20,8 +20,8 @@ func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatc
 }
 
 // return mock function for GetLogEvents
-func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) mr.CWLGetLogEventsAPI {
-	return func(t *testing.T) mr.CWLGetLogEventsAPI {
+func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) CWLGetLogEventsAPI {
+	return func(t *testing.T) CWLGetLogEventsAPI {
 		return GetLogEventsMockAPI(func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
 			t.Helper()
 			// for error case
@@ -134,7 +134,7 @@ func Test_GetCloudWatchLogEvents(t *testing.T) {
 		},
 	}
 	type args struct {
-		client func(t *testing.T) mr.CWLGetLogEventsAPI
+		client func(t *testing.T) CWLGetLogEventsAPI
 		group  string
 		stream string
 		token  string

@@ -31,7 +31,7 @@ S3 Log is not supported`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		cwlclient, err := mr.NewCloudWatchLogsAPI()
+		cwlclient, err := cwlog.NewCloudWatchLogsAPI()
 		if err != nil {
 			log.Fatal(err)
 		}

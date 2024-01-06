@@ -5,10 +5,25 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 )
+
+// interface for AWS CloudWatch Logs API
+type CWLGetLogEventsAPI interface {
+	GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
+}
+
+// return CloudWatchLogs api client
+func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return cloudwatchlogs.NewFromConfig(cfg), nil
+}
 
 // get CloudWatch Log settings from a build and return logGroupName, logStreamName and error
 func GetCloudWatchLogSetting(client mr.CodeBuildAPI, id string) (string, string, error) {
@@ -28,7 +43,7 @@ func GetCloudWatchLogSetting(client mr.CodeBuildAPI, id string) (string, string,
 }
 
 // get CloudWatchLog events and return GetLogEventsOutput
-func GetCloudWatchLogEvents(client mr.CWLGetLogEventsAPI, group string, stream string, token string) (cloudwatchlogs.GetLogEventsOutput, error) {
+func GetCloudWatchLogEvents(client CWLGetLogEventsAPI, group string, stream string, token string) (cloudwatchlogs.GetLogEventsOutput, error) {
 	startfromhead := true
 	if group == "" || stream == "" {
 		return cloudwatchlogs.GetLogEventsOutput{}, errors.New("you must supply a logGroupName and logStreamName")
