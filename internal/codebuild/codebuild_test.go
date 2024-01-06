@@ -259,7 +259,7 @@ func Test_RetryCodeBuild(t *testing.T) {
 	}
 }
 
-func Test_readConfigFile(t *testing.T) {
+func Test_ReadConfigFile(t *testing.T) {
 	type args struct {
 		filepath string
 	}
@@ -365,7 +365,7 @@ func Test_DumpConfig(t *testing.T) {
     - projectName: testproject2
 `
 	type args struct {
-		bc cmt.BuildConfig
+		filepath string
 	}
 	tests := []struct {
 		name    string
@@ -374,22 +374,15 @@ func Test_DumpConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "basic",
-			args: args{
-				cmt.BuildConfig{
-					Builds: []cmt.Build{
-						{ProjectName: "testproject", SourceVersion: "chore/test"},
-						{ProjectName: "testproject2"},
-					},
-				},
-			},
+			name:    "basic",
+			args:    args{"testdata/_test.yaml"},
 			want:    wantyaml,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DumpConfig(tt.args.bc)
+			got, err := DumpConfig(tt.args.filepath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("dumpConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return

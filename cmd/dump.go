@@ -13,11 +13,7 @@ var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "dump config for running CodeBuild projects",
 	Run: func(cmd *cobra.Command, args []string) {
-		bc, err := cb.ReadConfigFile(configfile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		conf, err := cb.DumpConfig(bc)
+		conf, err := cb.DumpConfig(configfile)
 		if err != nil {
 			log.Fatal(err)
 		}

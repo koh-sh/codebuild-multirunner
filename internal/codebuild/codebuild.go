@@ -87,20 +87,12 @@ func ReadConfigFile(filepath string) (types.BuildConfig, error) {
 	return bc, nil
 }
 
-// return colored string for each CodeBuild statuses
-func coloredString(status string) string {
-	switch status {
-	case "SUCCEEDED":
-		return color.GreenString(status)
-	case "IN_PROGRESS":
-		return color.BlueString(status)
-	default:
-		return color.RedString(status)
-	}
-}
-
 // dump read config with environment variables inserted
-func DumpConfig(bc types.BuildConfig) (string, error) {
+func DumpConfig(configfile string) (string, error) {
+	bc, err := ReadConfigFile(configfile)
+	if err != nil {
+		log.Fatal(err)
+	}
 	d, err := yaml.Marshal(&bc)
 	if err != nil {
 		return "", err
@@ -116,4 +108,16 @@ func ConvertBuildConfigToStartBuildInput(build types.Build) (codebuild.StartBuil
 		return startbuildinput, err
 	}
 	return startbuildinput, nil
+}
+
+// return colored string for each CodeBuild statuses
+func coloredString(status string) string {
+	switch status {
+	case "SUCCEEDED":
+		return color.GreenString(status)
+	case "IN_PROGRESS":
+		return color.BlueString(status)
+	default:
+		return color.RedString(status)
+	}
 }
