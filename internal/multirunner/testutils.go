@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
-	cwltypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
 	"github.com/aws/smithy-go/middleware"
@@ -61,13 +59,6 @@ func (m RetryBuildMockAPI) RetryBuild(ctx context.Context, params *codebuild.Ret
 	return m(ctx, params, optFns...)
 }
 
-// mock api for GetLogEvents
-type GetLogEventsMockAPI func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error)
-
-func (m GetLogEventsMockAPI) GetLogEvents(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-	return m(ctx, params, optFns...)
-}
-
 // return mock function for StartBuild
 func ReturnStartBuildMockAPI(build *types.Build, err error) func(t *testing.T) CodeBuildAPI {
 	return func(t *testing.T) CodeBuildAPI {
@@ -98,24 +89,6 @@ func ReturnBatchGetBuildsMockAPI(builds []types.Build) func(t *testing.T) CodeBu
 				Builds:         builds,
 				BuildsNotFound: []string{},
 				ResultMetadata: middleware.Metadata{},
-			}, nil
-		})
-	}
-}
-
-// return mock function for GetLogEvents
-func ReturnGetLogEventsMockAPI(events []cwltypes.OutputLogEvent) func(t *testing.T) CWLGetLogEventsAPI {
-	return func(t *testing.T) CWLGetLogEventsAPI {
-		return GetLogEventsMockAPI(func(ctx context.Context, params *cloudwatchlogs.GetLogEventsInput, optFns ...func(*cloudwatchlogs.Options)) (*cloudwatchlogs.GetLogEventsOutput, error) {
-			t.Helper()
-			// for error case
-			if *params.LogGroupName == "error" {
-				return nil, fmt.Errorf("error")
-			}
-			return &cloudwatchlogs.GetLogEventsOutput{
-				Events:            events,
-				NextBackwardToken: nil,
-				NextForwardToken:  nil,
 			}, nil
 		})
 	}

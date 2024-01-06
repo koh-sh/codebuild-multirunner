@@ -1,14 +1,11 @@
 package cwlog
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"log"
 
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	root "github.com/koh-sh/codebuild-multirunner/cmd"
+	"github.com/koh-sh/codebuild-multirunner/internal/cwlog"
 	mr "github.com/koh-sh/codebuild-multirunner/internal/multirunner"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +27,7 @@ S3 Log is not supported`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		group, stream, err := getCloudWatchLogSetting(cbclient, id)
+		group, stream, err := cwlog.GetCloudWatchLogSetting(cbclient, id)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -41,7 +38,7 @@ S3 Log is not supported`,
 		// first request will be invoked without token
 		token := ""
 		for {
-			res, err := getCloudWatchLogEvents(cwlclient, group, stream, token)
+			res, err := cwlog.GetCloudWatchLogEvents(cwlclient, group, stream, token)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -64,42 +61,4 @@ func init() {
 	root.RootCmd.AddCommand(logCmd)
 	logCmd.Flags().StringVar(&id, "id", "", "CodeBuild build id for getting log")
 	logCmd.MarkFlagRequired("id")
-}
-
-// get CloudWatch Log settings from a build and return logGroupName, logStreamName and error
-func getCloudWatchLogSetting(client mr.CodeBuildAPI, id string) (string, string, error) {
-	input := codebuild.BatchGetBuildsInput{Ids: []string{id}}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
-	if err != nil {
-		return "", "", err
-	}
-	if len(result.Builds) == 0 {
-		return "", "", fmt.Errorf("%v is not found", id)
-	}
-	build := result.Builds[0].Logs
-	if build.CloudWatchLogs.Status == "DISABLED" {
-		return "", "", fmt.Errorf("CloudWatch Logs for %v is Disabled", id)
-	}
-	return *build.GroupName, *build.StreamName, nil
-}
-
-// get CloudWatchLog events and return GetLogEventsOutput
-func getCloudWatchLogEvents(client mr.CWLGetLogEventsAPI, group string, stream string, token string) (cloudwatchlogs.GetLogEventsOutput, error) {
-	startfromhead := true
-	if group == "" || stream == "" {
-		return cloudwatchlogs.GetLogEventsOutput{}, errors.New("you must supply a logGroupName and logStreamName")
-	}
-	input := &cloudwatchlogs.GetLogEventsInput{
-		LogGroupName:  &group,
-		LogStreamName: &stream,
-		StartFromHead: &startfromhead,
-	}
-	if token != "" {
-		input.NextToken = &token
-	}
-	result, err := client.GetLogEvents(context.TODO(), input)
-	if err != nil {
-		return cloudwatchlogs.GetLogEventsOutput{}, err
-	}
-	return *result, nil
 }
