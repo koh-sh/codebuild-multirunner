@@ -93,3 +93,12 @@ func coloredString(status string) string {
 		return color.RedString(status)
 	}
 }
+
+// dump read config with environment variables inserted
+func DumpConfig(bc types.BuildConfig) (string, error) {
+	d, err := yaml.Marshal(&bc)
+	if err != nil {
+		return "", err
+	}
+	return string(d), nil
+}

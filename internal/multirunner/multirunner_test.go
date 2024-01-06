@@ -177,3 +177,46 @@ func Test_BuildStatusCheck(t *testing.T) {
 		})
 	}
 }
+
+func Test_DumpConfig(t *testing.T) {
+	wantyaml := `builds:
+    - projectName: testproject
+      sourceVersion: chore/test
+    - projectName: testproject2
+`
+	type args struct {
+		bc cmt.BuildConfig
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "basic",
+			args: args{
+				cmt.BuildConfig{
+					Builds: []cmt.Build{
+						{ProjectName: "testproject", SourceVersion: "chore/test"},
+						{ProjectName: "testproject2"},
+					},
+				},
+			},
+			want:    wantyaml,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DumpConfig(tt.args.bc)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("dumpConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("dumpConfig() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
