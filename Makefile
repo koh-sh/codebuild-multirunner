@@ -1,4 +1,4 @@
-.PHONY: setup test fmt cov tidy run lint dockerbuild dockerrun
+.PHONY: setup test fmt cov tidy run lint dockerbuild dockerrun blackboxtest
 
 COVFILE = coverage.out
 COVHTML = cover.html
@@ -32,3 +32,6 @@ dockerbuild:
 
 dockerrun:
 	docker run -it --rm -v ~/.aws:/root/.aws -v ~/.codebuild-multirunner.yaml:/.codebuild-multirunner.yaml codebuild-multirunner:latest -v
+
+blackboxtest:
+	./_testscripts/blackbox.sh
