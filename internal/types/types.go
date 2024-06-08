@@ -10,6 +10,40 @@ type BuildConfig struct {
 	Builds []Build `yaml:"builds"`
 }
 
+type Build struct {
+	ArtifactsOverride                ArtifactsOverride                 `yaml:"artifactsOverride,omitempty"`
+	BuildspecOverride                string                            `yaml:"buildspecOverride,omitempty"`
+	BuildStatusConfigOverride        BuildStatusConfigOverride         `yaml:"buildStatusConfigOverride,omitempty"`
+	CacheOverride                    CacheOverride                     `yaml:"cacheOverride,omitempty"`
+	CertificateOverride              string                            `yaml:"certificateOverride,omitempty"`
+	ComputeTypeOverride              string                            `yaml:"computeTypeOverride,omitempty"`
+	DebugSessionEnabled              bool                              `yaml:"debugSessionEnabled,omitempty"`
+	EncryptionKeyOverride            string                            `yaml:"encryptionKeyOverride,omitempty"`
+	EnvironmentTypeOverride          string                            `yaml:"environmentTypeOverride,omitempty"`
+	EnvironmentVariablesOverride     []EnvironmentVariablesOverride    `yaml:"environmentVariablesOverride,omitempty"`
+	FleetOverride                    FleetOverride                     `yaml:"fleetOverride,omitempty"`
+	GitCloneDepthOverride            int                               `yaml:"gitCloneDepthOverride,omitempty"`
+	GitSubmodulesConfigOverride      GitSubmodulesConfigOverride       `yaml:"gitSubmodulesConfigOverride,omitempty"`
+	IdempotencyToken                 string                            `yaml:"idempotencyToken,omitempty"`
+	ImageOverride                    string                            `yaml:"imageOverride,omitempty"`
+	ImagePullCredentialsTypeOverride string                            `yaml:"imagePullCredentialsTypeOverride,omitempty"`
+	InsecureSslOverride              bool                              `yaml:"insecureSslOverride,omitempty"`
+	LogsConfigOverride               LogsConfigOverride                `yaml:"logsConfigOverride,omitempty"`
+	PrivilegedModeOverride           bool                              `yaml:"privilegedModeOverride,omitempty"`
+	ProjectName                      string                            `yaml:"projectName"`
+	QueuedTimeoutInMinutesOverride   int                               `yaml:"queuedTimeoutInMinutesOverride,omitempty"`
+	RegistryCredentialOverride       RegistryCredentialOverride        `yaml:"registryCredentialOverride,omitempty"`
+	ReportBuildStatusOverride        bool                              `yaml:"reportBuildStatusOverride,omitempty"`
+	SecondaryArtifactsOverride       []SecondaryArtifactsOverride      `yaml:"secondaryArtifactsOverride,omitempty"`
+	SecondarySourcesOverride         []SecondarySourcesOverride        `yaml:"secondarySourcesOverride,omitempty"`
+	SecondarySourcesVersionOverride  []SecondarySourcesVersionOverride `yaml:"secondarySourcesVersionOverride,omitempty"`
+	ServiceRoleOverride              string                            `yaml:"serviceRoleOverride,omitempty"`
+	SourceAuthOverride               SourceAuthOverride                `yaml:"sourceAuthOverride,omitempty"`
+	SourceLocationOverride           string                            `yaml:"sourceLocationOverride,omitempty"`
+	SourceTypeOverride               string                            `yaml:"sourceTypeOverride,omitempty"`
+	SourceVersion                    string                            `yaml:"sourceVersion,omitempty"`
+	TimeoutInMinutesOverride         int                               `yaml:"timeoutInMinutesOverride,omitempty"`
+}
 type ArtifactsOverride struct {
 	ArtifactIdentifier   string `yaml:"artifactIdentifier,omitempty"`
 	BucketOwnerAccess    string `yaml:"bucketOwnerAccess,omitempty"`
@@ -35,6 +69,9 @@ type EnvironmentVariablesOverride struct {
 	Name  string `yaml:"name,omitempty"`
 	Type  string `yaml:"type,omitempty"`
 	Value string `yaml:"value,omitempty"`
+}
+type FleetOverride struct {
+	FleetArn string `yaml:"fleetArn,omitempty"`
 }
 type GitSubmodulesConfigOverride struct {
 	FetchSubmodules bool `yaml:"fetchSubmodules,omitempty"`
@@ -100,37 +137,4 @@ type SecondarySourcesVersionOverride struct {
 type SourceAuthOverride struct {
 	Resource string `yaml:"resource,omitempty"`
 	Type     string `yaml:"type,omitempty"`
-}
-type Build struct {
-	ArtifactsOverride                ArtifactsOverride                 `yaml:"artifactsOverride,omitempty"`
-	BuildspecOverride                string                            `yaml:"buildspecOverride,omitempty"`
-	BuildStatusConfigOverride        BuildStatusConfigOverride         `yaml:"buildStatusConfigOverride,omitempty"`
-	CacheOverride                    CacheOverride                     `yaml:"cacheOverride,omitempty"`
-	CertificateOverride              string                            `yaml:"certificateOverride,omitempty"`
-	ComputeTypeOverride              string                            `yaml:"computeTypeOverride,omitempty"`
-	DebugSessionEnabled              bool                              `yaml:"debugSessionEnabled,omitempty"`
-	EncryptionKeyOverride            string                            `yaml:"encryptionKeyOverride,omitempty"`
-	EnvironmentTypeOverride          string                            `yaml:"environmentTypeOverride,omitempty"`
-	EnvironmentVariablesOverride     []EnvironmentVariablesOverride    `yaml:"environmentVariablesOverride,omitempty"`
-	GitCloneDepthOverride            int                               `yaml:"gitCloneDepthOverride,omitempty"`
-	GitSubmodulesConfigOverride      GitSubmodulesConfigOverride       `yaml:"gitSubmodulesConfigOverride,omitempty"`
-	IdempotencyToken                 string                            `yaml:"idempotencyToken,omitempty"`
-	ImageOverride                    string                            `yaml:"imageOverride,omitempty"`
-	ImagePullCredentialsTypeOverride string                            `yaml:"imagePullCredentialsTypeOverride,omitempty"`
-	InsecureSslOverride              bool                              `yaml:"insecureSslOverride,omitempty"`
-	LogsConfigOverride               LogsConfigOverride                `yaml:"logsConfigOverride,omitempty"`
-	PrivilegedModeOverride           bool                              `yaml:"privilegedModeOverride,omitempty"`
-	ProjectName                      string                            `yaml:"projectName"`
-	QueuedTimeoutInMinutesOverride   int                               `yaml:"queuedTimeoutInMinutesOverride,omitempty"`
-	RegistryCredentialOverride       RegistryCredentialOverride        `yaml:"registryCredentialOverride,omitempty"`
-	ReportBuildStatusOverride        bool                              `yaml:"reportBuildStatusOverride,omitempty"`
-	SecondaryArtifactsOverride       []SecondaryArtifactsOverride      `yaml:"secondaryArtifactsOverride,omitempty"`
-	SecondarySourcesOverride         []SecondarySourcesOverride        `yaml:"secondarySourcesOverride,omitempty"`
-	SecondarySourcesVersionOverride  []SecondarySourcesVersionOverride `yaml:"secondarySourcesVersionOverride,omitempty"`
-	ServiceRoleOverride              string                            `yaml:"serviceRoleOverride,omitempty"`
-	SourceAuthOverride               SourceAuthOverride                `yaml:"sourceAuthOverride,omitempty"`
-	SourceLocationOverride           string                            `yaml:"sourceLocationOverride,omitempty"`
-	SourceTypeOverride               string                            `yaml:"sourceTypeOverride,omitempty"`
-	SourceVersion                    string                            `yaml:"sourceVersion,omitempty"`
-	TimeoutInMinutesOverride         int                               `yaml:"timeoutInMinutesOverride,omitempty"`
 }
