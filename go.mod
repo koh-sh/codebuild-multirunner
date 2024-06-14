@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.37.3
 	github.com/fatih/color v1.17.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
