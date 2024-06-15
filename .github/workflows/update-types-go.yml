@@ -4,6 +4,9 @@ on:
     - cron: "0 21 * * 5"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check:
     name: Update StartBuildInput type
