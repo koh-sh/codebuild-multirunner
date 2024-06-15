@@ -1,0 +1,30 @@
+name: Update StartBuildInput type
+on:
+  schedule:
+    - cron: "0 21 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    name: Update StartBuildInput type
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install tools
+        run: go install mvdan.cc/gofumpt@latest
+
+      - name: Updates types.go
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT4PR }}
+        run: bash .github/scripts/update_types_go.sh
