@@ -4,10 +4,6 @@ on:
     - cron: "0 21 * * 5"
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   check:
     name: Update StartBuildInput type
@@ -26,5 +22,5 @@ jobs:
 
       - name: Updates types.go
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT4PR }}
         run: bash .github/scripts/update_types_go.sh
