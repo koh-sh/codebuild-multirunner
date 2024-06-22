@@ -5,7 +5,7 @@ on:
     inputs:
       tag:
         type: string
-        description: 'version tag (vx.x.x)'
+        description: "version tag (vx.x.x)"
         required: true
 
 permissions:
@@ -15,28 +15,34 @@ jobs:
   tag_push:
     runs-on: ubuntu-latest
     steps:
-    - name: Push git tag
-      run: |
-        gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/${{github.repository}}/git/refs \
-          -f ref="refs/tags/${{inputs.tag}}" \
-          -f sha="${{github.sha}}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT4TAG }}
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: Push git tag
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{github.repository}}/git/refs \
+            -f ref="refs/tags/${{inputs.tag}}" \
+            -f sha="${{github.sha}}"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
-    - name: Push git tag v0
-      if: startsWith(inputs.tag, 'v0')
-      run: |
-        gh api \
-          --method PATCH \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/${{github.repository}}/git/refs/tags/v0 \
-          -f sha="${{github.sha}}" \
-          -F force=true
-      env:
-        # secrets.GITHUB_TOKEN will not trigger other workflows
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push git tag v0
+        if: startsWith(inputs.tag, 'v0')
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{github.repository}}/git/refs/tags/v0 \
+            -f sha="${{github.sha}}" \
+            -F force=true
+        env:
+          # secrets.GITHUB_TOKEN will not trigger other workflows
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
