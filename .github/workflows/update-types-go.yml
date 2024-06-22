@@ -21,10 +21,17 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
       - name: Install tools
         run: go install mvdan.cc/gofumpt@latest
 
       - name: Updates types.go
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT4PR }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: bash .github/scripts/update_types_go.sh
