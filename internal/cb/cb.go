@@ -23,7 +23,7 @@ type CodeBuildAPI interface {
 
 // return CodeBuild api client
 func NewCodeBuildAPI() (CodeBuildAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func NewCodeBuildAPI() (CodeBuildAPI, error) {
 
 // run CodeBuild Projects and return build id
 func RunCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string, error) {
-	result, err := client.StartBuild(context.TODO(), &input)
+	result, err := client.StartBuild(context.Background(), &input)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +44,7 @@ func RunCodeBuild(client CodeBuildAPI, input codebuild.StartBuildInput) (string,
 // retry CodeBuild build
 func RetryCodeBuild(client CodeBuildAPI, id string) (string, error) {
 	input := codebuild.RetryBuildInput{Id: &id}
-	result, err := client.RetryBuild(context.TODO(), &input)
+	result, err := client.RetryBuild(context.Background(), &input)
 	if err != nil {
 		return "", err
 	}
@@ -117,7 +117,7 @@ func buildStatusCheck(client CodeBuildAPI, ids []string) ([]string, bool, error)
 	inprogressids := []string{}
 	hasfailedbuild := false
 	input := codebuild.BatchGetBuildsInput{Ids: ids}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
+	result, err := client.BatchGetBuilds(context.Background(), &input)
 	if err != nil {
 		return nil, true, err
 	}

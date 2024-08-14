@@ -18,7 +18,7 @@ type CWLGetLogEventsAPI interface {
 
 // return CloudWatchLogs api client
 func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func NewCloudWatchLogsAPI() (CWLGetLogEventsAPI, error) {
 // get CloudWatch Log settings from a build and return logGroupName, logStreamName and error
 func GetCloudWatchLogSetting(client cb.CodeBuildAPI, id string) (string, string, error) {
 	input := codebuild.BatchGetBuildsInput{Ids: []string{id}}
-	result, err := client.BatchGetBuilds(context.TODO(), &input)
+	result, err := client.BatchGetBuilds(context.Background(), &input)
 	if err != nil {
 		return "", "", err
 	}
@@ -56,7 +56,7 @@ func GetCloudWatchLogEvents(client CWLGetLogEventsAPI, group string, stream stri
 	if token != "" {
 		input.NextToken = &token
 	}
-	result, err := client.GetLogEvents(context.TODO(), input)
+	result, err := client.GetLogEvents(context.Background(), input)
 	if err != nil {
 		return cloudwatchlogs.GetLogEventsOutput{}, err
 	}
