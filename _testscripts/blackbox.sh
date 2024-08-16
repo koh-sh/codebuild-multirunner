@@ -22,6 +22,11 @@ title "go build"
 go build
 ls -la ./codebuild-multirunner
 
+# docker build
+title "docker build"
+docker build . -t codebuild-multirunner:latest
+docker run -it --rm codebuild-multirunner:latest -v
+
 # show help
 title "help"
 ./codebuild-multirunner --help
