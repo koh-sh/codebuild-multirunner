@@ -28,10 +28,10 @@ lint:
 
 # for testing
 dockerbuild:
-	docker build . -t codebuild-multirunner:latest
+	docker build . -t runcbs:latest
 
 dockerrun:
-	docker run -it --rm -v ~/.aws:/root/.aws -v ~/.codebuild-multirunner.yaml:/.codebuild-multirunner.yaml codebuild-multirunner:latest -v
+	docker run -it --rm -v ~/.aws:/root/.aws -v ~/.runcbs.yaml:/.runcbs.yaml runcbs:latest -v
 
 blackboxtest:
 	./_testscripts/blackbox.sh

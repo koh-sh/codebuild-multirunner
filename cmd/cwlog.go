@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/koh-sh/codebuild-multirunner/internal/cb"
-	"github.com/koh-sh/codebuild-multirunner/internal/cwlog"
+	"github.com/koh-sh/runcbs/internal/cb"
+	"github.com/koh-sh/runcbs/internal/cwlog"
 	"github.com/spf13/cobra"
 )
 

@@ -1,10 +1,10 @@
-name: 'codebuild-multirunner'
+name: 'runcbs'
 description: '"Start build with overrides" multiple AWS CodeBuild Projects at once.'
 inputs:
   config:
-    description: 'file path for config file. (default "./.codebuild-multirunner.yaml")'
+    description: 'file path for config file. (default "./.runcbs.yaml")'
     required: false
-    default: '.codebuild-multirunner.yaml'
+    default: '.runcbs.yaml'
   polling-span:
     description: 'polling span in second for builds status check (default 60)'
     required: false

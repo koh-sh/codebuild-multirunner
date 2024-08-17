@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/koh-sh/codebuild-multirunner/cmd"
+	"github.com/koh-sh/runcbs/cmd"
 )
 
 var (

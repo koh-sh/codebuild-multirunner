@@ -20,32 +20,32 @@ function fail() {
 # go build
 title "go build"
 go build
-ls -la ./codebuild-multirunner
+ls -la ./runcbs
 
 # docker build
 title "docker build"
-docker build . -t codebuild-multirunner:latest
-docker run -it --rm codebuild-multirunner:latest -v
+docker build . -t runcbs:latest
+docker run -it --rm runcbs:latest -v
 
 # show help
 title "help"
-./codebuild-multirunner --help
+./runcbs --help
 
 # dump
 title "dump"
-./codebuild-multirunner dump --config "$(cd $(dirname $0);pwd)/codebuild-multirunner.yaml"
+./runcbs dump --config "$(cd $(dirname $0);pwd)/runcbs.yaml"
 
 # run
 title "run"
-if ./codebuild-multirunner run --config "$(cd $(dirname $0);pwd)/codebuild-multirunner.yaml" --polling-span 5; then
+if ./runcbs run --config "$(cd $(dirname $0);pwd)/runcbs.yaml" --polling-span 5; then
     fail "return value should not be 0"
 fi
 
 # log
 title "log"
 LATEST=$(aws codebuild list-builds-for-project --project-name testproject | jq -r '.ids[]' | head -n 1)
-./codebuild-multirunner log --id "$LATEST"
+./runcbs log --id "$LATEST"
 
 # retry
 title "retry"
-./codebuild-multirunner retry --id "$LATEST" --polling-span 10
+./runcbs retry --id "$LATEST" --polling-span 10

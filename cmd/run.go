@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/koh-sh/codebuild-multirunner/internal/cb"
+	"github.com/koh-sh/runcbs/internal/cb"
 	"github.com/spf13/cobra"
 )
 

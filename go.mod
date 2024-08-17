@@ -1,4 +1,4 @@
-module github.com/koh-sh/codebuild-multirunner
+module github.com/koh-sh/runcbs
 
 go 1.23.0
 

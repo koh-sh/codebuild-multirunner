@@ -1,4 +1,4 @@
-# This is sample of .codebuild-multirunner.yaml
+# This is sample of .runcbs.yaml
 # builds is a list of Start Build Input
 # Refer to https://docs.aws.amazon.com/codebuild/latest/APIReference/API_StartBuild.html
 #
