@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild/types"
 	"github.com/fatih/color"
-	cmt "github.com/koh-sh/codebuild-multirunner/internal/types"
+	cmt "github.com/koh-sh/runcbs/internal/types"
 )
 
 // mock api for StartBuild

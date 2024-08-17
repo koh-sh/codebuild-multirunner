@@ -18,7 +18,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "codebuild-multirunner",
+	Use:   "runcbs",
 	Short: "This is a simple CLI tool to \"Start build with overrides\" multiple AWS CodeBuild Projects at once.",
 	Long: `This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild Projects at once.
 
@@ -34,7 +34,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configfile, "config", "./.codebuild-multirunner.yaml", "file path for config file.")
+	rootCmd.PersistentFlags().StringVar(&configfile, "config", "./.runcbs.yaml", "file path for config file.")
 }
 
 // set version from goreleaser variables

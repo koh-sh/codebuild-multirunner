@@ -1,4 +1,4 @@
-# codebuild-multirunner
+# runcbs
 
 ## Overview
 
@@ -11,10 +11,10 @@ This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild
 You can install with Homebrew.
 
 ```bash
-brew install koh-sh/tap/codebuild-multirunner
+brew install koh-sh/tap/runcbs
 ```
 
-Or download prebuild binary from [Releases](https://github.com/koh-sh/codebuild-multirunner/releases)
+Or download prebuild binary from [Releases](https://github.com/koh-sh/runcbs/releases)
 
 ## Usage
 
@@ -24,7 +24,7 @@ This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild
 This command will read YAML based config file and run multiple CodeBuild projects with oneliner.
 
 Usage:
-  codebuild-multirunner [command]
+  runcbs [command]
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
@@ -35,11 +35,11 @@ Available Commands:
   run         run CodeBuild projects based on YAML
 
 Flags:
-      --config string   file path for config file. (default "./.codebuild-multirunner.yaml")
-  -h, --help            help for codebuild-multirunner
-  -v, --version         version for codebuild-multirunner
+      --config string   file path for config file. (default "./.runcbs.yaml")
+  -h, --help            help for runcbs
+  -v, --version         version for runcbs
 
-Use "codebuild-multirunner [command] --help" for more information about a command.
+Use "runcbs [command] --help" for more information about a command.
 ```
 
 ## QuickStart
@@ -50,7 +50,7 @@ Create YAML based config file.
 change "testproject" to your CodeBuild Project name.
 
 ```bash
-% cat .codebuild-multirunner.yaml
+% cat .runcbs.yaml
 builds:
   - projectName: testproject
 ```
@@ -60,13 +60,13 @@ builds:
 Then execute command with "run" subcommand, so your CodeBuild project will be running.
 
 ```bash
-codebuild-multirunner run
+runcbs run
 ```
 
 If you specify multiple projects, all projects will be running at once.
 
 ```bash
-% cat .codebuild-multirunner.yaml
+% cat .runcbs.yaml
 builds:
   - projectName: testproject
   - projectName: testproject2
@@ -76,7 +76,7 @@ builds:
 You can "Start build with overrides" by specifying parameters.
 
 ```bash
-% cat .codebuild-multirunner.yaml
+% cat .runcbs.yaml
 builds:
   - projectName: testproject
   - projectName: testproject2
@@ -105,7 +105,7 @@ You can check the config by "dump" subcommand.
 
 ```bash
 % export BRANCH_NAME=feature/new_function
-% codebuild-multirunner dump
+% runcbs dump
 builds:
     - projectName: testproject
     - environmentVariablesOverride:
@@ -119,7 +119,7 @@ builds:
 %
 ```
 
-Refer to [sample config file](.codebuild-multirunner.yaml)
+Refer to [sample config file](.runcbs.yaml)
 
 ### Get build log
 
@@ -128,7 +128,7 @@ And `log` is useful to get detail of a build.
 CloudWatch Logs need to be ENABLED for the build.
 
 ```bash
-% codebuild-multirunner log --id testproject:33719fff-7ee7-4828-9c6a-ec814226e3fc
+% runcbs log --id testproject:33719fff-7ee7-4828-9c6a-ec814226e3fc
 [Container] 2023/08/11 02:53:03 Waiting for agent ping
 [Container] 2023/08/11 02:53:04 Waiting for DOWNLOAD_SOURCE
 [Container] 2023/08/11 02:53:05 Phase is DOWNLOAD_SOURCE
@@ -148,7 +148,7 @@ CloudWatch Logs need to be ENABLED for the build.
 You can retry a past build.
 
 ```bash
-% codebuild-multirunner retry --id testproject:8948df1b-1352-4f87-bc68-318a37a7949b
+% runcbs retry --id testproject:8948df1b-1352-4f87-bc68-318a37a7949b
 2023/08/19 14:52:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [STARTED]
 2023/08/19 14:53:28 testproject:dd3bd981-59ab-4c78-a0f2-22c75545ffc7 [SUCCEEDED]
 ```
@@ -175,9 +175,9 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-1
     - name: run codebuild
-      uses: koh-sh/codebuild-multirunner@v0
+      uses: koh-sh/runcbs@v0
       with:
-        config: '.codebuild-multirunner.yaml'
+        config: '.runcbs.yaml'
         polling-span: '60'
 ```
 
@@ -186,9 +186,9 @@ Definition of input is below.
 ```yaml
 inputs:
    config:
-     description: 'file path for config file. (default "./.codebuild-multirunner.yaml")'
+     description: 'file path for config file. (default "./.runcbs.yaml")'
      required: false
-     default: '.codebuild-multirunner.yaml'
+     default: '.runcbs.yaml'
    polling-span:
      description: 'polling span in second for builds status check (default 60)'
      required: false

@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
 	"github.com/jinzhu/copier"
-	"github.com/koh-sh/codebuild-multirunner/internal/types"
+	"github.com/koh-sh/runcbs/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
