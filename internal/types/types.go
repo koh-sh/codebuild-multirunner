@@ -46,6 +46,7 @@ type Build struct {
 	ImagePullCredentialsTypeOverride string                            `yaml:"imagePullCredentialsTypeOverride,omitempty"`
 	DebugSessionEnabled              bool                              `yaml:"debugSessionEnabled,omitempty"`
 	FleetOverride                    FleetOverride                     `yaml:"fleetOverride,omitempty"`
+	AutoRetryLimitOverride           int                               `yaml:"autoRetryLimitOverride,omitempty"`
 }
 type GitSubmodulesConfig struct {
 	FetchSubmodules bool `yaml:"fetchSubmodules,omitempty"`
