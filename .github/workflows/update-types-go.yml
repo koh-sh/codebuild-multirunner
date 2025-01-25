@@ -11,7 +11,7 @@ permissions:
 jobs:
   check:
     name: Update StartBuildInput type
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Check out code
         uses: actions/checkout@v4
