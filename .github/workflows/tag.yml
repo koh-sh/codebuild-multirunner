@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   tag_push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Create GitHub App Token
         uses: actions/create-github-app-token@v1
