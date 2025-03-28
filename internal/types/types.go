@@ -116,9 +116,10 @@ type BuildStatusConfigOverride struct {
 	TargetURL string `yaml:"targetUrl,omitempty"`
 }
 type CacheOverride struct {
-	Type     string   `yaml:"type,omitempty"`
-	Location string   `yaml:"location,omitempty"`
-	Modes    []string `yaml:"modes,omitempty"`
+	Type           string   `yaml:"type,omitempty"`
+	Location       string   `yaml:"location,omitempty"`
+	Modes          []string `yaml:"modes,omitempty"`
+	CacheNamespace string   `yaml:"cacheNamespace,omitempty"`
 }
 type CloudWatchLogs struct {
 	Status     string `yaml:"status,omitempty"`
