@@ -9,9 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/fatih/color"
+	"github.com/goccy/go-yaml"
 	"github.com/jinzhu/copier"
 	"github.com/koh-sh/codebuild-multirunner/internal/types"
-	"gopkg.in/yaml.v3"
 )
 
 // interface for AWS CodeBuild API
@@ -74,7 +74,9 @@ func DumpConfig(configfile string) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	d, err := yaml.Marshal(&bc)
+	// Apply 4-space indentation and adjust sequence indentation to match the output format of gopkg.in/yaml.v3
+	// This ensures backward compatibility with existing tools and scripts that may depend on this specific format
+	d, err := yaml.MarshalWithOptions(&bc, yaml.Indent(4), yaml.IndentSequence(true))
 	if err != nil {
 		return "", err
 	}
