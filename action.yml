@@ -1,18 +1,23 @@
-name: 'codebuild-multirunner'
+name: "codebuild-multirunner"
 description: '"Start build with overrides" multiple AWS CodeBuild Projects at once.'
 inputs:
   config:
     description: 'file path for config file. (default "./.codebuild-multirunner.yaml")'
     required: false
-    default: '.codebuild-multirunner.yaml'
-  polling-span:
-    description: 'polling span in second for builds status check (default 60)'
+    default: ".codebuild-multirunner.yaml"
+  targets:
+    description: "comma separated list of target group names to run (only used if config is in map format)"
     required: false
-    default: '60'
+    default: ""
+  polling-span:
+    description: "polling span in second for builds status check (default 60)"
+    required: false
+    default: "60"
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
   args:
     - "run"
     - "--config ${{ inputs.config }}"
     - "--polling-span ${{ inputs.polling-span }}"
+    - "${{ inputs.targets != '' && format('--targets {0}', inputs.targets) || '' }}"

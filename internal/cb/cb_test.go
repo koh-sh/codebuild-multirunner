@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
@@ -240,56 +241,86 @@ func Test_ReadConfigFile(t *testing.T) {
 		filepath string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    cmt.BuildConfig
-		wantErr bool
+		name            string
+		args            args
+		want            interface{}
+		wantErr         bool
+		wantErrContains string // Optional: check if error message contains this string
 	}{
 		{
-			name: "basic",
+			name: "basic (list format)",
 			args: args{"testdata/_test.yaml"},
-			want: cmt.BuildConfig{
-				Builds: []cmt.Build{
-					{ProjectName: "testproject", SourceVersion: "chore/test"},
-					{ProjectName: "testproject2"},
-				},
+			want: []cmt.Build{
+				{ProjectName: "testproject", SourceVersion: "chore/test"},
+				{ProjectName: "testproject2"},
 			},
 			wantErr: false,
 		},
 		{
-			name: "environment variable",
+			name: "environment variable (list format)",
 			args: args{"testdata/_test2.yaml"},
-			want: cmt.BuildConfig{
-				Builds: []cmt.Build{
-					{ProjectName: "testproject3", SourceVersion: "chore/test"},
-					{ProjectName: "testproject2"},
+			want: []cmt.Build{
+				{ProjectName: "testproject3", SourceVersion: "chore/test"},
+				{ProjectName: "testproject2"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "map format",
+			args: args{"testdata/_test_map.yaml"},
+			want: map[string][]cmt.Build{
+				"group1": {
+					{ProjectName: "proj-a"},
+				},
+				"group2": {
+					{ProjectName: "proj-b", SourceVersion: "develop"},
+					{ProjectName: "proj-c"},
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name:    "invalid yaml file",
-			args:    args{"testdata/_test3.yaml"},
-			want:    cmt.BuildConfig{},
-			wantErr: true,
+			name:            "invalid yaml file",
+			args:            args{"testdata/_test3.yaml"},
+			want:            nil,
+			wantErr:         true,
+			wantErrContains: "failed to unmarshal yaml",
 		},
 		{
 			name:    "file not found",
 			args:    args{"testdata/_testxxx.yaml"},
-			want:    cmt.BuildConfig{},
+			want:    nil,
 			wantErr: true,
 		},
+		{
+			name:            "missing builds field",
+			args:            args{"testdata/_test_missing_builds.yaml"},
+			want:            nil,
+			wantErr:         true,
+			wantErrContains: "`builds` field not found",
+		},
+		{
+			name:            "invalid builds field type",
+			args:            args{"testdata/_test_invalid_builds_type.yaml"},
+			want:            nil,
+			wantErr:         true,
+			wantErrContains: "unexpected type for 'builds' field",
+		},
 	}
-	t.Setenv("TEST_ENV", "testproject3") // setting environment variable for test case 2
+	t.Setenv("TEST_ENV", "testproject3")
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadConfigFile(tt.args.filepath)
+			got, _, err := ReadConfigFile(tt.args.filepath)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("readConfigFile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ReadConfigFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			if tt.wantErr && tt.wantErrContains != "" && !strings.Contains(err.Error(), tt.wantErrContains) {
+				t.Errorf("ReadConfigFile() error = %v, wantErr containing %q", err, tt.wantErrContains)
+			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("readConfigFile() = %v, want %v", got, tt.want)
+				t.Errorf("ReadConfigFile() got = %#v, want %#v", got, tt.want)
 			}
 		})
 	}
@@ -344,10 +375,11 @@ func Test_DumpConfig(t *testing.T) {
 		filepath string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
+		name            string
+		args            args
+		want            string
+		wantErr         bool
+		wantErrContains string // Optional: check if error message contains this string
 	}{
 		{
 			name:    "basic",
@@ -355,16 +387,33 @@ func Test_DumpConfig(t *testing.T) {
 			want:    wantyaml,
 			wantErr: false,
 		},
+		{
+			name:            "file not found",
+			args:            args{"testdata/_test_dump_notfound.yaml"},
+			want:            "",
+			wantErr:         true,
+			wantErrContains: "failed to read config file for dump",
+		},
+		{
+			name:            "invalid yaml syntax",
+			args:            args{"testdata/_test_invalid_syntax_dump.yaml"},
+			want:            "",
+			wantErr:         true,
+			wantErrContains: "failed to unmarshal yaml for dump",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := DumpConfig(tt.args.filepath)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("dumpConfig() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("DumpConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			if tt.wantErr && tt.wantErrContains != "" && !strings.Contains(err.Error(), tt.wantErrContains) {
+				t.Errorf("DumpConfig() error = %v, wantErr containing %q", err, tt.wantErrContains)
+			}
 			if got != tt.want {
-				t.Errorf("dumpConfig() = %v, want %v", got, tt.want)
+				t.Errorf("DumpConfig() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -470,6 +519,131 @@ func TestWaitAndCheckBuildStatus(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("WaitAndCheckBuildStatus() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFilterBuildsByTarget(t *testing.T) {
+	mapBuilds := map[string][]cmt.Build{
+		"group1": {
+			{ProjectName: "proj-a"},
+		},
+		"group2": {
+			{ProjectName: "proj-b", SourceVersion: "develop"},
+			{ProjectName: "proj-c"},
+		},
+		"emptyGroup": {},
+	}
+
+	listBuilds := []cmt.Build{
+		{ProjectName: "testproject", SourceVersion: "chore/test"},
+		{ProjectName: "testproject2"},
+	}
+
+	tests := []struct {
+		name         string
+		parsedBuilds interface{}
+		isMapFormat  bool
+		targets      []string
+		want         []cmt.Build
+		wantErr      bool
+	}{
+		{
+			name:         "Map format, no targets",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{},
+			want: []cmt.Build{
+				{ProjectName: "proj-a"},
+				{ProjectName: "proj-b", SourceVersion: "develop"},
+				{ProjectName: "proj-c"},
+			},
+			wantErr: false,
+		},
+		{
+			name:         "Map format, one target",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{"group1"},
+			want: []cmt.Build{
+				{ProjectName: "proj-a"},
+			},
+			wantErr: false,
+		},
+		{
+			name:         "Map format, multiple targets",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{"group1", "group2"},
+			want: []cmt.Build{
+				{ProjectName: "proj-a"},
+				{ProjectName: "proj-b", SourceVersion: "develop"},
+				{ProjectName: "proj-c"},
+			},
+			wantErr: false,
+		},
+		{
+			name:         "Map format, target not found",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{"group3"},
+			want:         nil,
+			wantErr:      true,
+		},
+		{
+			name:         "Map format, some targets not found",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{"group1", "group3"},
+			want:         nil, // Expect error, so specific builds don't matter
+			wantErr:      true,
+		},
+		{
+			name:         "Map format, target is empty group",
+			parsedBuilds: mapBuilds,
+			isMapFormat:  true,
+			targets:      []string{"emptyGroup"},
+			want:         []cmt.Build{}, // Expect empty slice, no error
+			wantErr:      false,
+		},
+		{
+			name:         "List format, no targets",
+			parsedBuilds: listBuilds,
+			isMapFormat:  false,
+			targets:      []string{},
+			want: []cmt.Build{
+				{ProjectName: "testproject", SourceVersion: "chore/test"},
+				{ProjectName: "testproject2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:         "List format, targets specified (should error)",
+			parsedBuilds: listBuilds,
+			isMapFormat:  false,
+			targets:      []string{"group1"},
+			want:         nil,
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := FilterBuildsByTarget(tt.parsedBuilds, tt.isMapFormat, tt.targets)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FilterBuildsByTarget() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// Custom comparison to handle nil vs empty slice differences potentially caused by append
+			if len(got) == 0 && len(tt.want) == 0 {
+				// Both are effectively empty, consider them equal for this test's purpose
+				return
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FilterBuildsByTarget() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

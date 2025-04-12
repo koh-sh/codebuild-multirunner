@@ -1,0 +1,7 @@
+builds:
+  group1:
+    - projectName: proj-a
+  group2:
+    - projectName: proj-b
+      sourceVersion: develop
+    - projectName: proj-c

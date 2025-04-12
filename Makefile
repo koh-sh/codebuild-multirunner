@@ -20,6 +20,8 @@ tidy:
 lint:
 	go tool golangci-lint run -v
 
+ci: fmt lint test
+
 # for testing
 dockerbuild:
 	docker build . -t codebuild-multirunner:latest

@@ -7,18 +7,20 @@
 
 ---
 builds:
-# projectName is required
-- projectName: testproject
-# Specify parameters to override
-- projectName: testproject2
-  environmentVariablesOverride:
-    - name: TEST_VAR
-      value: FOOBAR
-      type: PLAINTEXT
-# Environment variables are assigned
-- projectName: testproject3
-  sourceVersion: ${BRANCH_NAME}
-
+  group1:
+    # projectName is required
+    - projectName: testproject
+    # Specify parameters to override
+    - projectName: testproject2
+      environmentVariablesOverride:
+        - name: TEST_VAR
+          value: FOOBAR
+          type: PLAINTEXT
+  group2:
+    # Environment variables are assigned
+    - projectName: testproject3
+      sourceVersion: ${BRANCH_NAME}
+#
 ## below is full list of parameters
 # - artifactsOverride:
 #     artifactIdentifier: string
@@ -31,11 +33,13 @@ builds:
 #     packaging: string
 #     path: string
 #     type: string
+#   autoRetryLimitOverride: number
 #   buildspecOverride: string
 #   buildStatusConfigOverride:
 #     context: string
 #     targetUrl: string
 #   cacheOverride:
+#     cacheNamespace: string
 #     location: string
 #     modes:
 #     - string
@@ -49,6 +53,8 @@ builds:
 #   - name: string
 #     type: string
 #     value: string
+#   fleetOverride:
+#     fleetArn: string
 #   gitCloneDepthOverride: number
 #   gitSubmodulesConfigOverride:
 #     fetchSubmodules: boolean
