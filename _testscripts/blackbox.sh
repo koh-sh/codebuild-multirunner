@@ -49,3 +49,12 @@ LATEST=$(aws codebuild list-builds-for-project --project-name testproject | jq -
 # retry
 title "retry"
 ./codebuild-multirunner retry --id "$LATEST" --polling-span 10
+
+# run with target
+title "run target_a"
+if ./codebuild-multirunner run --config "$(cd $(dirname $0);pwd)/codebuild-multirunner_target.yaml" --polling-span 5 --targets target_a; then
+    fail "return value should not be 0"
+fi
+
+title "run target_b"
+./codebuild-multirunner run --config "$(cd $(dirname $0);pwd)/codebuild-multirunner_target.yaml" --polling-span 5 --targets target_b

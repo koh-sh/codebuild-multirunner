@@ -1,0 +1,10 @@
+builds:
+  target_a:
+    - projectName: testproject
+      environmentVariablesOverride:
+        - name: TEST_VAR
+          value: FOOBAR
+          type: PLAINTEXT
+    - projectName: testproject2
+  target_b:
+    - projectName: testproject

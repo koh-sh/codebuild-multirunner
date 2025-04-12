@@ -2,6 +2,7 @@ package cb
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -54,31 +55,72 @@ func RetryCodeBuild(client CodeBuildAPI, id string) (string, error) {
 }
 
 // read yaml config file for builds definition
-func ReadConfigFile(filepath string) (types.BuildConfig, error) {
-	bc := types.BuildConfig{}
+// returns parsed builds (map or list) and a boolean indicating if it's the map format
+func ReadConfigFile(filepath string) (interface{}, bool, error) {
+	var data map[string]interface{}
 	b, err := os.ReadFile(filepath)
 	if err != nil {
-		return bc, err
+		return nil, false, err
 	}
 	expanded := os.ExpandEnv(string(b))
-	err = yaml.Unmarshal([]byte(expanded), &bc)
+	err = yaml.Unmarshal([]byte(expanded), &data)
 	if err != nil {
-		return bc, err
+		return nil, false, fmt.Errorf("failed to unmarshal yaml: %w", err)
 	}
-	return bc, nil
+
+	buildsData, ok := data["builds"]
+	if !ok {
+		return nil, false, fmt.Errorf("`builds` field not found in config file")
+	}
+
+	switch buildsTyped := buildsData.(type) {
+	case map[string]interface{}:
+		// New map format
+		parsedMap := make(map[string][]types.Build)
+		buildsYAML, err := yaml.Marshal(buildsTyped) // Re-marshal to handle nested lists correctly
+		if err != nil {
+			return nil, true, fmt.Errorf("failed to re-marshal map builds: %w", err)
+		}
+		err = yaml.Unmarshal(buildsYAML, &parsedMap)
+		if err != nil {
+			return nil, true, fmt.Errorf("failed to unmarshal map builds into target type: %w", err)
+		}
+		return parsedMap, true, nil
+	case []interface{}:
+		// Legacy list format
+		parsedList := []types.Build{}
+		buildsYAML, err := yaml.Marshal(buildsTyped) // Re-marshal to handle list items correctly
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to re-marshal list builds: %w", err)
+		}
+		err = yaml.Unmarshal(buildsYAML, &parsedList)
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to unmarshal list builds into target type: %w", err)
+		}
+		return parsedList, false, nil
+	default:
+		return nil, false, fmt.Errorf("unexpected type for 'builds' field: %T", buildsData)
+	}
 }
 
 // dump read config with environment variables inserted
 func DumpConfig(configfile string) (string, error) {
-	bc, err := ReadConfigFile(configfile)
+	// Read the raw data first to keep the original structure for dumping
+	var rawData map[string]interface{}
+	b, err := os.ReadFile(configfile)
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("failed to read config file for dump: %w", err)
 	}
-	// Apply 4-space indentation and adjust sequence indentation to match the output format of gopkg.in/yaml.v3
-	// This ensures backward compatibility with existing tools and scripts that may depend on this specific format
-	d, err := yaml.MarshalWithOptions(&bc, yaml.Indent(4), yaml.IndentSequence(true))
+	expanded := os.ExpandEnv(string(b))
+	err = yaml.Unmarshal([]byte(expanded), &rawData)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal yaml for dump: %w", err)
+	}
+
+	// Marshal with options for pretty printing
+	d, err := yaml.MarshalWithOptions(&rawData, yaml.Indent(4), yaml.IndentSequence(true))
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal config for dump: %w", err)
 	}
 	return string(d), nil
 }
@@ -144,4 +186,49 @@ func coloredString(status string) string {
 	default:
 		return color.RedString(status)
 	}
+}
+
+// FilterBuildsByTarget filters the builds based on the provided targets.
+// It returns a list of builds to run and an error if any target is invalid or not found.
+func FilterBuildsByTarget(parsedBuilds interface{}, isMapFormat bool, targets []string) ([]types.Build, error) {
+	var buildsToRun []types.Build
+
+	if isMapFormat {
+		groupedBuilds := parsedBuilds.(map[string][]types.Build)
+		if len(targets) == 0 {
+			// Run all builds from all groups if no targets specified
+			for _, groupBuilds := range groupedBuilds {
+				buildsToRun = append(buildsToRun, groupBuilds...)
+			}
+		} else {
+			// Run builds only from specified target groups
+			foundTargets := make(map[string]bool)
+			for _, targetGroup := range targets {
+				if groupBuilds, ok := groupedBuilds[targetGroup]; ok {
+					buildsToRun = append(buildsToRun, groupBuilds...)
+					foundTargets[targetGroup] = true
+				} else {
+					return nil, fmt.Errorf("targets group '%s' not found in config file", targetGroup)
+				}
+			}
+			// Check if any specified targets were not found
+			allTargetsFound := true
+			for _, t := range targets {
+				if !foundTargets[t] {
+					allTargetsFound = false
+				}
+			}
+			if !allTargetsFound {
+				return nil, fmt.Errorf("one or more specified targets groups were not found")
+			}
+		}
+	} else {
+		// For list format, targets option is not supported
+		if len(targets) > 0 {
+			return nil, fmt.Errorf("--targets option is only available for the map format configuration file")
+		}
+		buildsToRun = parsedBuilds.([]types.Build)
+	}
+
+	return buildsToRun, nil
 }

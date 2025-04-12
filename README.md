@@ -55,15 +55,51 @@ builds:
   - projectName: testproject
 ```
 
+You can also use a map format to group builds. This allows you to target specific groups for execution using the `--targets` flag.
+
+```yaml
+# .codebuild-multirunner.yaml (Map format)
+builds:
+  group1:
+    - projectName: testproject-a
+      sourceVersion: main
+    - projectName: testproject-b
+  group2:
+    - projectName: testproject-c
+      environmentVariablesOverride:
+        - name: STAGE
+          value: production
+```
+
 ### Run
 
-Then execute command with "run" subcommand, so your CodeBuild project will be running.
+Then execute command with "run" subcommand.
+
+If you are using the legacy list format, all defined projects will be executed:
 
 ```bash
 codebuild-multirunner run
 ```
 
-If you specify multiple projects, all projects will be running at once.
+If you are using the new map format, you can run all builds in all groups:
+
+```bash
+codebuild-multirunner run
+```
+
+Or run only specific groups using the `--targets` flag:
+
+```bash
+# Runs only the builds defined under 'group1'
+codebuild-multirunner run --targets group1
+
+# Runs builds defined under 'group1' AND 'group2'
+codebuild-multirunner run --targets group1 --targets group2
+```
+
+**Note:** The `--targets` flag is only available when using the map format for the `builds` section in your configuration file.
+
+If you specify multiple projects (either in the list format or across multiple groups in the map format without targeting), all selected projects will be running at once.
 
 ```bash
 % cat .codebuild-multirunner.yaml
@@ -73,32 +109,35 @@ builds:
   - projectName: testproject3
 ```
 
-You can "Start build with overrides" by specifying parameters.
+You can "Start build with overrides" by specifying parameters within each build definition:
 
 ```bash
 % cat .codebuild-multirunner.yaml
 builds:
-  - projectName: testproject
-  - projectName: testproject2
-    environmentVariablesOverride:
-    - name: TEST_VAR
-      value: FOOBAR
-      type: PLAINTEXT
-  - projectName: testproject3
+  web-app:
+    - projectName: testproject-frontend
+    - projectName: testproject-backend
+      environmentVariablesOverride:
+      - name: TEST_VAR
+        value: FOOBAR
+        type: PLAINTEXT
+  batch-job:
+    - projectName: testproject-batch
 ```
 
 Also environment variables are substituted for execution.
 
-```bash
+```yaml
 builds:
-- projectName: testproject
-- projectName: testproject2
-  environmentVariablesOverride:
-    - name: TEST_VAR
-      value: FOOBAR
-      type: PLAINTEXT
-- projectName: testproject3
-  sourceVersion: ${BRANCH_NAME} # it will read environment variable
+  my-app:
+    - projectName: testproject
+    - projectName: testproject2
+      environmentVariablesOverride:
+        - name: TEST_VAR
+          value: FOOBAR
+          type: PLAINTEXT
+    - projectName: testproject3
+      sourceVersion: ${BRANCH_NAME} # it will read environment variable
 ```
 
 You can check the config by "dump" subcommand.
@@ -107,6 +146,7 @@ You can check the config by "dump" subcommand.
 % export BRANCH_NAME=feature/new_function
 % codebuild-multirunner dump
 builds:
+  my-app:
     - projectName: testproject
     - environmentVariablesOverride:
         - name: TEST_VAR
@@ -115,7 +155,6 @@ builds:
       projectName: testproject2
     - projectName: testproject3
       sourceVersion: feature/new_function
-
 %
 ```
 
@@ -189,6 +228,10 @@ inputs:
      description: 'file path for config file. (default "./.codebuild-multirunner.yaml")'
      required: false
      default: '.codebuild-multirunner.yaml'
+   targets:
+     description: 'comma separated list of target group names to run (only used if config is in map format)'
+     required: false
+     default: ''
    polling-span:
      description: 'polling span in second for builds status check (default 60)'
      required: false
