@@ -7,7 +7,7 @@ test:
 	go test ./... -json | tparse -all
 
 fmt:
-	go tool gofumpt -l -w *.go
+	go tool gofumpt -l -w .
 
 cov:
 	go test -cover ./... -coverprofile=$(COVFILE)

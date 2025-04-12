@@ -8,9 +8,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.47.2
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.58.1
 	github.com/fatih/color v1.18.0
+	github.com/goccy/go-yaml v1.17.1
 	github.com/jinzhu/copier v0.4.0
 	github.com/spf13/cobra v1.9.1
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -128,7 +128,7 @@ require (
 	github.com/leonklingele/grouper v1.1.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/macabu/inamedparam v0.2.0 // indirect
-	github.com/magiconair/properties v1.8.9 // indirect
+	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/maratori/testableexamples v1.0.0 // indirect
 	github.com/maratori/testpackage v1.1.1 // indirect
 	github.com/matoous/godox v1.1.0 // indirect
@@ -217,6 +217,7 @@ require (
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
 	mvdan.cc/gofumpt v0.7.0 // indirect
 	mvdan.cc/unparam v0.0.0-20250301125049-0df0534333a4 // indirect
