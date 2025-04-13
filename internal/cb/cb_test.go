@@ -243,7 +243,7 @@ func Test_ReadConfigFile(t *testing.T) {
 	tests := []struct {
 		name            string
 		args            args
-		want            interface{}
+		want            any
 		wantErr         bool
 		wantErrContains string // Optional: check if error message contains this string
 	}{
@@ -543,7 +543,7 @@ func TestFilterBuildsByTarget(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		parsedBuilds interface{}
+		parsedBuilds any
 		isMapFormat  bool
 		targets      []string
 		want         []cmt.Build

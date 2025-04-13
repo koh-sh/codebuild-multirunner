@@ -10,7 +10,7 @@ package types
 
 // list of Builds
 type BuildConfig struct {
-	Builds interface{} `yaml:"builds"`
+	Builds any `yaml:"builds"`
 }
 
 type Build struct {
