@@ -56,8 +56,8 @@ func RetryCodeBuild(client CodeBuildAPI, id string) (string, error) {
 
 // read yaml config file for builds definition
 // returns parsed builds (map or list) and a boolean indicating if it's the map format
-func ReadConfigFile(filepath string) (interface{}, bool, error) {
-	var data map[string]interface{}
+func ReadConfigFile(filepath string) (any, bool, error) {
+	var data map[string]any
 	b, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, false, err
@@ -74,7 +74,7 @@ func ReadConfigFile(filepath string) (interface{}, bool, error) {
 	}
 
 	switch buildsTyped := buildsData.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		// New map format
 		parsedMap := make(map[string][]types.Build)
 		buildsYAML, err := yaml.Marshal(buildsTyped) // Re-marshal to handle nested lists correctly
@@ -86,7 +86,7 @@ func ReadConfigFile(filepath string) (interface{}, bool, error) {
 			return nil, true, fmt.Errorf("failed to unmarshal map builds into target type: %w", err)
 		}
 		return parsedMap, true, nil
-	case []interface{}:
+	case []any:
 		// Legacy list format
 		parsedList := []types.Build{}
 		buildsYAML, err := yaml.Marshal(buildsTyped) // Re-marshal to handle list items correctly
@@ -106,7 +106,7 @@ func ReadConfigFile(filepath string) (interface{}, bool, error) {
 // dump read config with environment variables inserted
 func DumpConfig(configfile string) (string, error) {
 	// Read the raw data first to keep the original structure for dumping
-	var rawData map[string]interface{}
+	var rawData map[string]any
 	b, err := os.ReadFile(configfile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read config file for dump: %w", err)
@@ -190,7 +190,7 @@ func coloredString(status string) string {
 
 // FilterBuildsByTarget filters the builds based on the provided targets.
 // It returns a list of builds to run and an error if any target is invalid or not found.
-func FilterBuildsByTarget(parsedBuilds interface{}, isMapFormat bool, targets []string) ([]types.Build, error) {
+func FilterBuildsByTarget(parsedBuilds any, isMapFormat bool, targets []string) ([]types.Build, error) {
 	var buildsToRun []types.Build
 
 	if isMapFormat {
