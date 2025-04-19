@@ -1,4 +1,4 @@
-.PHONY: test fmt cov tidy run lint dockerbuild dockerrun blackboxtest
+.PHONY: test fmt cov tidy run lint dockerbuild dockerrun blackboxtest modernize modernize-fix
 
 COVFILE = coverage.out
 COVHTML = cover.html
@@ -20,7 +20,14 @@ tidy:
 lint:
 	go tool golangci-lint run -v
 
-ci: fmt lint test
+ci: fmt modernize-fix lint test
+
+# Go Modernize
+modernize:
+	go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
+
+modernize-fix:
+	go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
 
 # for testing
 dockerbuild:
