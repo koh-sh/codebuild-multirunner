@@ -17,7 +17,7 @@ package types
 
 // list of Builds
 type BuildConfig struct {
-	Builds []Build `yaml:"builds"`
+	Builds any `yaml:"builds"`
 }
 '
 echo "$header" > "$file_path"

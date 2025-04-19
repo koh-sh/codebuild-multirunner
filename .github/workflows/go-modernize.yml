@@ -1,0 +1,22 @@
+name: Go Modernize
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  modernize:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run Go Modernize
+        run: |
+          go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
