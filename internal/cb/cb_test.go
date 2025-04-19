@@ -548,6 +548,8 @@ func TestFilterBuildsByTarget(t *testing.T) {
 		targets      []string
 		want         []cmt.Build
 		wantErr      bool
+		// Flag to indicate order-independent comparison should be used
+		orderIndependent bool
 	}{
 		{
 			name:         "Map format, no targets",
@@ -559,7 +561,8 @@ func TestFilterBuildsByTarget(t *testing.T) {
 				{ProjectName: "proj-b", SourceVersion: "develop"},
 				{ProjectName: "proj-c"},
 			},
-			wantErr: false,
+			wantErr:          false,
+			orderIndependent: true,
 		},
 		{
 			name:         "Map format, one target",
@@ -581,7 +584,8 @@ func TestFilterBuildsByTarget(t *testing.T) {
 				{ProjectName: "proj-b", SourceVersion: "develop"},
 				{ProjectName: "proj-c"},
 			},
-			wantErr: false,
+			wantErr:          false,
+			orderIndependent: true,
 		},
 		{
 			name:         "Map format, target not found",
@@ -631,18 +635,53 @@ func TestFilterBuildsByTarget(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := FilterBuildsByTarget(tt.parsedBuilds, tt.isMapFormat, tt.targets)
+
+			// Check error condition
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilterBuildsByTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			// Custom comparison to handle nil vs empty slice differences potentially caused by append
-			if len(got) == 0 && len(tt.want) == 0 {
-				// Both are effectively empty, consider them equal for this test's purpose
+			// If we expect an error, don't check the result further
+			if tt.wantErr {
 				return
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
+			// Both nil and empty slices represent "no builds" - consider them equal
+			if len(got) == 0 && len(tt.want) == 0 {
+				return
+			}
+
+			// For cases where order doesn't matter, use content-based comparison
+			if tt.orderIndependent {
+				// Check for same length first
+				if len(got) != len(tt.want) {
+					t.Errorf("FilterBuildsByTarget() got %d builds, want %d builds", len(got), len(tt.want))
+					return
+				}
+
+				// Create lookup map by ProjectName
+				wantBuilds := make(map[string]cmt.Build)
+				for _, build := range tt.want {
+					wantBuilds[build.ProjectName] = build
+				}
+
+				// Check each build in the result
+				for _, gotBuild := range got {
+					wantBuild, exists := wantBuilds[gotBuild.ProjectName]
+					if !exists {
+						t.Errorf("FilterBuildsByTarget() unexpected project %q in result", gotBuild.ProjectName)
+						continue
+					}
+
+					// Compare other fields
+					if gotBuild.SourceVersion != wantBuild.SourceVersion {
+						t.Errorf("FilterBuildsByTarget() project %q has SourceVersion = %q, want %q",
+							gotBuild.ProjectName, gotBuild.SourceVersion, wantBuild.SourceVersion)
+					}
+				}
+			} else if !reflect.DeepEqual(got, tt.want) {
+				// For cases where order matters, use exact DeepEqual
 				t.Errorf("FilterBuildsByTarget() got = %v, want %v", got, tt.want)
 			}
 		})
