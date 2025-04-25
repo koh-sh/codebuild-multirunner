@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.47.3
-	github.com/aws/aws-sdk-go-v2/service/codebuild v1.59.0
+	github.com/aws/aws-sdk-go-v2/service/codebuild v1.60.0
 	github.com/fatih/color v1.18.0
 	github.com/goccy/go-yaml v1.17.1
 	github.com/jinzhu/copier v0.4.0
