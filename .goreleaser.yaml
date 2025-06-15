@@ -47,7 +47,7 @@ changelog:
       - Merge remote-tracking branch
       - Merge branch
       - go mod tidy
-brews:
+homebrew_casks:
   - repository:
       owner: koh-sh
       name: homebrew-tap

@@ -11,7 +11,7 @@ This is a simple CLI tool to "Start build with overrides" multiple AWS CodeBuild
 You can install with Homebrew.
 
 ```bash
-brew install koh-sh/tap/codebuild-multirunner
+brew install --cask koh-sh/tap/codebuild-multirunner
 ```
 
 Or download prebuild binary from [Releases](https://github.com/koh-sh/codebuild-multirunner/releases)
