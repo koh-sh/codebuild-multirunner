@@ -88,6 +88,7 @@ func ReadConfigFile(filepath string) (any, bool, error) {
 		return parsedMap, true, nil
 	case []any:
 		// Legacy list format
+		fmt.Fprintf(os.Stderr, "\n⚠️  WARNING: List format for 'builds' is deprecated. Please migrate to map format.\n\n")
 		parsedList := []types.Build{}
 		buildsYAML, err := yaml.Marshal(buildsTyped) // Re-marshal to handle list items correctly
 		if err != nil {
@@ -105,20 +106,17 @@ func ReadConfigFile(filepath string) (any, bool, error) {
 
 // dump read config with environment variables inserted
 func DumpConfig(configfile string) (string, error) {
-	// Read the raw data first to keep the original structure for dumping
-	var rawData map[string]any
-	b, err := os.ReadFile(configfile)
+	// Use ReadConfigFile to ensure deprecation warnings are shown
+	builds, _, err := ReadConfigFile(configfile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read config file for dump: %w", err)
-	}
-	expanded := os.ExpandEnv(string(b))
-	err = yaml.Unmarshal([]byte(expanded), &rawData)
-	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal yaml for dump: %w", err)
+		return "", err
 	}
 
+	// Reconstruct the config structure for dumping
+	configData := map[string]any{"builds": builds}
+
 	// Marshal with options for pretty printing
-	d, err := yaml.MarshalWithOptions(&rawData, yaml.Indent(4), yaml.IndentSequence(true))
+	d, err := yaml.MarshalWithOptions(&configData, yaml.Indent(4), yaml.IndentSequence(true))
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal config for dump: %w", err)
 	}
