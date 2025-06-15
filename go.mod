@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.50.2
 	github.com/aws/aws-sdk-go-v2/service/codebuild v1.61.1
 	github.com/fatih/color v1.18.0
-	github.com/goccy/go-yaml v1.17.1
+	github.com/goccy/go-yaml v1.18.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/spf13/cobra v1.9.1
 )
