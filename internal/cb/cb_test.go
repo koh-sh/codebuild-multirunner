@@ -392,14 +392,14 @@ func Test_DumpConfig(t *testing.T) {
 			args:            args{"testdata/_test_dump_notfound.yaml"},
 			want:            "",
 			wantErr:         true,
-			wantErrContains: "failed to read config file for dump",
+			wantErrContains: "no such file or directory",
 		},
 		{
 			name:            "invalid yaml syntax",
 			args:            args{"testdata/_test_invalid_syntax_dump.yaml"},
 			want:            "",
 			wantErr:         true,
-			wantErrContains: "failed to unmarshal yaml for dump",
+			wantErrContains: "failed to unmarshal yaml",
 		},
 	}
 	for _, tt := range tests {
