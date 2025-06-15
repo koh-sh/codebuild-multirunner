@@ -89,6 +89,7 @@ Requires AWS credentials with permissions for:
 
 ## Git Workflow
 
+- **NEVER commit directly to the `main` branch** - always create feature branches
 - Create feature branches with descriptive names (e.g., `feat/deprecate-list-format`)
 - Always run `make ci` before committing to ensure all tests and lints pass
 - Use conventional commit format with detailed commit messages
