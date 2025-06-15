@@ -24,6 +24,9 @@ make cov            # Generate HTML coverage report
 make blackboxtest   # Run black-box integration tests
 make lint           # Run golangci-lint
 make fmt            # Format code with gofumpt
+make tidy           # Tidy go.mod dependencies
+make modernize      # Check for Go modernization opportunities
+make modernize-fix  # Apply Go modernization fixes
 ```
 
 ### Build and Run
@@ -39,10 +42,13 @@ make dockerrun      # Run containerized version
 ### Core Structure
 
 - **cmd/**: CLI commands using Cobra framework
+  - `root.go`: Root command and CLI setup
   - `run.go`: Main parallel execution logic
   - `retry.go`: Build retry functionality
   - `cwlog.go`: CloudWatch log retrieval
+  - `dump.go`: Configuration dump functionality
 - **internal/cb/**: Core business logic with AWS CodeBuild API interactions
+- **internal/cwlog/**: CloudWatch logs processing and retrieval
 - **internal/types/**: Auto-generated AWS API type definitions
 
 ### Key Patterns
@@ -76,7 +82,7 @@ Requires AWS credentials with permissions for:
 
 ## Testing Strategy
 
-- **Unit tests**: Comprehensive mocking of AWS APIs in `internal/cb/cb_test.go`
+- **Unit tests**: Comprehensive mocking of AWS APIs in `internal/cb/cb_test.go` and `internal/cwlog/cwlog_test.go`
 - **Integration tests**: Black-box testing in `_testscripts/`
 - **Coverage reporting**: Use `make cov` for HTML coverage reports
 
@@ -94,3 +100,30 @@ Requires AWS credentials with permissions for:
 - Always run `make ci` before committing to ensure all tests and lints pass
 - Use conventional commit format with detailed commit messages
 - Commit changes only after all CI checks pass successfully
+
+## Claude Code Instructions
+
+### Key Development Practices
+
+- **ALWAYS run `make ci`** before making any commits - this ensures code formatting, modernization, linting, and testing all pass
+- **Interface-first development**: Use the existing `CodeBuildAPI` interface pattern for new AWS integrations
+- **Concurrent-safe patterns**: Follow existing goroutine + WaitGroup patterns for parallel operations
+- **Error handling**: Use structured errors with context, maintain graceful degradation
+- **Configuration**: Support both legacy and modern YAML formats, preserve backward compatibility
+
+### Available Commands
+
+The tool provides these main commands:
+
+- `run`: Execute multiple CodeBuild projects in parallel
+- `retry`: Retry a specific CodeBuild build by ID
+- `log`: Retrieve CloudWatch logs for a build
+- `dump`: Display parsed configuration
+- `completion`: Generate shell completion scripts
+
+### Testing Requirements
+
+- Run `make ci` to execute the full test suite
+- Unit tests use comprehensive AWS API mocking
+- Integration tests validate end-to-end functionality
+- All code must pass linting and formatting checks
