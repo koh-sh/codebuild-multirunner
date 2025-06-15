@@ -49,13 +49,20 @@ Use "codebuild-multirunner [command] --help" for more information about a comman
 Create YAML based config file.
 change "testproject" to your CodeBuild Project name.
 
+**⚠️ Important Notice: List Format is Deprecated**
+
+The list format for the `builds` section is now deprecated and will show a warning message when used. Please use the map format instead for new configurations.
+
+**Legacy List Format (Deprecated):**
 ```bash
 % cat .codebuild-multirunner.yaml
 builds:
   - projectName: testproject
 ```
 
-You can also use a map format to group builds. This allows you to target specific groups for execution using the `--targets` flag.
+**Recommended Map Format:**
+
+Use a map format to group builds. This allows you to target specific groups for execution using the `--targets` flag.
 
 ```yaml
 # .codebuild-multirunner.yaml (Map format)
@@ -75,10 +82,11 @@ builds:
 
 Then execute command with "run" subcommand.
 
-If you are using the legacy list format, all defined projects will be executed:
+If you are using the legacy list format (deprecated), all defined projects will be executed. **Note: You will see a deprecation warning message when using the list format:**
 
 ```bash
 codebuild-multirunner run
+# ⚠️  WARNING: List format for 'builds' is deprecated. Please migrate to map format.
 ```
 
 If you are using the new map format, you can run all builds in all groups:
@@ -99,9 +107,43 @@ codebuild-multirunner run --targets group1 --targets group2
 
 **Note:** The `--targets` flag is only available when using the map format for the `builds` section in your configuration file.
 
+### Migration Guide: List Format to Map Format
+
+If you are currently using the deprecated list format, here's how to migrate to the recommended map format:
+
+**Before (List Format - Deprecated):**
+```yaml
+builds:
+  - projectName: testproject-frontend
+  - projectName: testproject-backend
+    environmentVariablesOverride:
+      - name: STAGE
+        value: production
+  - projectName: testproject-batch
+```
+
+**After (Map Format - Recommended):**
+```yaml
+builds:
+  default:  # You can use any group name
+    - projectName: testproject-frontend
+    - projectName: testproject-backend
+      environmentVariablesOverride:
+        - name: STAGE
+          value: production
+    - projectName: testproject-batch
+```
+
+This migration allows you to:
+- Eliminate the deprecation warning
+- Group your builds logically
+- Use the `--targets` flag to run specific groups
+- Maintain the same functionality while future-proofing your configuration
+
 If you specify multiple projects (either in the list format or across multiple groups in the map format without targeting), all selected projects will be running at once.
 
 ```bash
+# Example using deprecated list format (will show warning)
 % cat .codebuild-multirunner.yaml
 builds:
   - projectName: testproject
