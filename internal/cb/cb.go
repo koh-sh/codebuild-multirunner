@@ -123,7 +123,7 @@ func DumpConfig(configfile string) (string, error) {
 	return string(d), nil
 }
 
-// copy configration read from yaml to codebuild.StartBuildInput
+// copy configuration read from yaml to codebuild.StartBuildInput
 func ConvertBuildConfigToStartBuildInput(build types.Build) (codebuild.StartBuildInput, error) {
 	startbuildinput := codebuild.StartBuildInput{}
 	err := copier.CopyWithOption(&startbuildinput, build, copier.Option{IgnoreEmpty: true, DeepCopy: true})
