@@ -14,6 +14,12 @@ You can install with Homebrew.
 brew install --cask koh-sh/tap/codebuild-multirunner
 ```
 
+Or install with mise.
+
+```bash
+mise use -g github:koh-sh/codebuild-multirunner
+```
+
 Or download prebuild binary from [Releases](https://github.com/koh-sh/codebuild-multirunner/releases)
 
 ## Usage
