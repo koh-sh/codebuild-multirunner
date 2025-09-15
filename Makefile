@@ -4,7 +4,7 @@ COVFILE = coverage.out
 COVHTML = cover.html
 
 test:
-	go test ./... -json | tparse -all
+	go test ./... -json | go tool tparse -all
 
 fmt:
 	go tool gofumpt -l -w .
