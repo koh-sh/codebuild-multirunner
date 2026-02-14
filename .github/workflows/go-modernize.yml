@@ -1,4 +1,4 @@
-name: Go Modernize
+name: Go Fix
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  modernize:
+  fix:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
@@ -17,6 +17,6 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run Go Modernize
+      - name: Run Go Fix
         run: |
-          go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
+          test -z "$(go fix -diff ./...)"

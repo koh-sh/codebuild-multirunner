@@ -11,10 +11,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Primary Development Workflow
 
 ```bash
-make ci             # Complete CI pipeline: format + modernize + lint + test
+make ci             # Complete CI pipeline: format + fix + lint + test
 ```
 
-Use `make ci` for all testing and linting - it runs the complete pipeline including formatting, modernization checks, linting, and testing.
+Use `make ci` for all testing and linting - it runs the complete pipeline including formatting, go fix, linting, and testing.
 
 ### Individual Commands (for specific needs)
 
@@ -25,8 +25,7 @@ make blackboxtest   # Run black-box integration tests
 make lint           # Run golangci-lint
 make fmt            # Format code with gofumpt
 make tidy           # Tidy go.mod dependencies
-make modernize      # Check for Go modernization opportunities
-make modernize-fix  # Apply Go modernization fixes
+make fix            # Apply go fix (modernize)
 ```
 
 ### Build and Run
@@ -88,7 +87,7 @@ Requires AWS credentials with permissions for:
 
 ## Dependencies
 
-- Go 1.24.0+ required
+- Go 1.26.0+ required
 - Uses AWS SDK v2 for all AWS interactions
 - Cobra for CLI framework
 - goccy/go-yaml for YAML processing with environment variable expansion
