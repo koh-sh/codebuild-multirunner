@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Create GitHub App Token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
         id: app-token
         with:
           app-id: ${{ secrets.APP_ID }}
