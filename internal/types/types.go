@@ -47,6 +47,7 @@ type Build struct {
 	DebugSessionEnabled              bool                              `yaml:"debugSessionEnabled,omitempty"`
 	FleetOverride                    FleetOverride                     `yaml:"fleetOverride,omitempty"`
 	AutoRetryLimitOverride           int                               `yaml:"autoRetryLimitOverride,omitempty"`
+	HostKernelOverride               string                            `yaml:"hostKernelOverride,omitempty"`
 }
 type GitSubmodulesConfig struct {
 	FetchSubmodules bool `yaml:"fetchSubmodules,omitempty"`
