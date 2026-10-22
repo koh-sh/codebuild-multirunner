@@ -87,7 +87,7 @@ Requires AWS credentials with permissions for:
 
 ## Dependencies
 
-- Go 1.26.0+ required
+- Go 1.27.3+ required
 - Uses AWS SDK v2 for all AWS interactions
 - Cobra for CLI framework
 - goccy/go-yaml for YAML processing with environment variable expansion

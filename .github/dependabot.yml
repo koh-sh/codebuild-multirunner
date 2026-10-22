@@ -26,3 +26,14 @@ updates:
       github-actions:
         patterns:
           - "*"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    cooldown:
+      default-days: 5
+    ignore:
+      # Go minor upgrades also need go.mod changes; take only patch releases here.
+      - dependency-name: "golang"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
